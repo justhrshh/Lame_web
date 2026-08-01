@@ -70,8 +70,6 @@ export const ParticleCanvas = () => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
-        ctx.shadowBlur = 10;
         ctx.fill();
       });
 

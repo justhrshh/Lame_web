@@ -415,7 +415,8 @@
   color: #FFFFFF;
   margin-bottom: 1rem;
   text-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-  animation: slowFadeUp 1.8s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+  animation: slowFadeUp 2.2s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Ultra Slow-Motion Animated Theme Line */
@@ -428,7 +429,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: themeLineDraw 5.5s 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+  animation: themeLineDraw 4.5s 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .themeLineTrack {
@@ -492,7 +494,8 @@
   color: var(--text-secondary);
   font-weight: 300;
   max-width: 680px;
-  animation: slowFadeUp 2.4s 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+  animation: slowFadeUp 2.4s 1.0s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .heroButtons {
@@ -500,7 +503,8 @@
   align-items: center;
   gap: 1.2rem;
   margin-top: 2.2rem;
-  animation: slowFadeUp 2.8s 2.0s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+  animation: slowFadeUp 2.6s 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .primaryBtn {
@@ -605,13 +609,11 @@
 @keyframes slowFadeUp {
   0% {
     opacity: 0;
-    transform: translate3d(0, 30px, 0);
-    filter: blur(10px);
+    transform: translate3d(0, 40px, 0) scale(0.97);
   }
   100% {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
-    filter: blur(0px);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 

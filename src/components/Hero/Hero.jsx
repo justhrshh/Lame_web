@@ -8,8 +8,7 @@ export const Hero = () => {
   const cardRefs = useRef([]);
   const textOverlayRef = useRef(null);
 
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0, targetX: 0, targetY: 0 });
-  const [scrollY, setScrollY] = useState(0);
+  const mousePosRef = useRef({ targetX: 0, targetY: 0 });
   const [activeProject, setActiveProject] = useState(null);
   const [visibleCardCount, setVisibleCardCount] = useState(18);
 
@@ -31,38 +30,30 @@ export const Hero = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Mouse move listener for global 3D perspective
+  // Passive mouse move listener updating Ref directly without triggering React re-renders
   useEffect(() => {
     const handleMouseMove = (e) => {
       const normX = (e.clientX / window.innerWidth - 0.5) * 2; // -1 to +1
       const normY = (e.clientY / window.innerHeight - 0.5) * 2; // -1 to +1
-      setMousePos((prev) => ({ ...prev, targetX: normX, targetY: normY }));
-    };
-
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
+      mousePosRef.current.targetX = normX;
+      mousePosRef.current.targetY = normY;
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Individual card tilt & specular glare calculation on hover (Riotters-inspired physics)
+  // Individual card tilt & specular glare calculation on hover
   const handleCardMouseMove = (e, idx) => {
     const card = cardRefs.current[idx];
     if (!card) return;
 
     const rect = card.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 to +0.5
-    const py = (e.clientY - rect.top) / rect.height - 0.5; // -0.5 to +0.5
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
 
-    const tiltX = py * -24; // tilt up/down
-    const tiltY = px * 24;  // tilt left/right
+    const tiltX = py * -24;
+    const tiltY = px * 24;
     const glareX = (px + 0.5) * 100;
     const glareY = (py + 0.5) * 100;
 
@@ -82,7 +73,7 @@ export const Hero = () => {
     setActiveProject(null);
   };
 
-  // Continuous rAF Loop for Slow Motion Loading + 60FPS Floating Motion + Lerped Mouse Perspective + Scroll Flight
+  // Continuous 60FPS rAF Loop for Smooth Loading & Floating Motion (Zero Re-render overhead)
   useEffect(() => {
     let animId;
     let time = 0;
@@ -91,27 +82,27 @@ export const Hero = () => {
     let currMouseY = 0;
 
     const render = () => {
-      time += 1;
+      time += 0.016; // Smooth time step
 
-      // Slow-motion cinematic loading progression
+      // Smooth cinematic slow-motion load sequence (~2.0 seconds duration)
       if (loadProgress < 1) {
-        loadProgress = Math.min(1, loadProgress + 0.007);
+        loadProgress = Math.min(1, loadProgress + 0.005);
       }
-      const easedLoad = 1 - Math.pow(1 - loadProgress, 3.5);
+      const easedLoad = 1 - Math.pow(1 - loadProgress, 3);
 
       // Smooth Lerp for Mouse
-      currMouseX += (mousePos.targetX - currMouseX) * 0.05;
-      currMouseY += (mousePos.targetY - currMouseY) * 0.05;
+      currMouseX += (mousePosRef.current.targetX - currMouseX) * 0.04;
+      currMouseY += (mousePosRef.current.targetY - currMouseY) * 0.04;
 
       const currentScroll = window.scrollY;
       const scrollFlight = currentScroll * 1.8;
 
       // Global gallery rotation from mouse perspective
-      const sceneRotY = currMouseX * 14;
-      const sceneRotX = -currMouseY * 10;
+      const sceneRotY = currMouseX * 12;
+      const sceneRotX = -currMouseY * 8;
 
       // Initial camera depth zoom during slow motion load
-      const initialCameraZ = (1 - easedLoad) * -550;
+      const initialCameraZ = (1 - easedLoad) * -450;
 
       if (galleryRef.current) {
         galleryRef.current.style.transform = `
@@ -140,24 +131,24 @@ export const Hero = () => {
         const { initialPos, speed, amp } = proj;
 
         // Staggered card load progress
-        const staggerDelay = idx * 0.035;
-        const cardProgress = Math.max(0, Math.min(1, (loadProgress - staggerDelay) / 0.55));
+        const staggerDelay = idx * 0.03;
+        const cardProgress = Math.max(0, Math.min(1, (loadProgress - staggerDelay) / 0.5));
         const easedCardLoad = 1 - Math.pow(1 - cardProgress, 3);
 
-        const loadZOffset = (1 - easedCardLoad) * -350;
-        const loadScale = 0.85 + easedCardLoad * 0.15;
-        const cardLoadOpacity = Math.min(1, cardProgress * 1.5);
+        const loadZOffset = (1 - easedCardLoad) * -300;
+        const loadScale = 0.88 + easedCardLoad * 0.12;
+        const cardLoadOpacity = Math.min(1, cardProgress * 1.4);
 
-        // Multi-harmonic sine waves for float & tilt
-        const floatY = Math.sin(time * speed.y + idx) * amp.y;
-        const driftX = Math.cos(time * speed.x + idx * 0.7) * amp.x;
-        const tiltX = Math.sin(time * speed.rot + idx * 0.5) * amp.rot;
-        const tiltY = Math.cos(time * speed.rot * 0.8 + idx) * amp.rot;
-        const breathScale = 1 + Math.sin(time * 0.0015 + idx) * 0.02;
+        // Multi-harmonic floating & breathing sine wave animations
+        const floatY = Math.sin(time * speed.y * 50 + idx) * amp.y;
+        const driftX = Math.cos(time * speed.x * 50 + idx * 0.7) * amp.x;
+        const tiltX = Math.sin(time * speed.rot * 50 + idx * 0.5) * amp.rot;
+        const tiltY = Math.cos(time * speed.rot * 40 + idx) * amp.rot;
+        const breathScale = 1 + Math.sin(time * 1.2 + idx) * 0.015;
 
         const depthFactor = (initialPos.z + 500) / 1000;
-        const mouseShiftX = currMouseX * (25 * depthFactor);
-        const mouseShiftY = currMouseY * (20 * depthFactor);
+        const mouseShiftX = currMouseX * (22 * depthFactor);
+        const mouseShiftY = currMouseY * (18 * depthFactor);
 
         const effZ = initialPos.z + loadZOffset + scrollFlight;
         const scrollOpacity = effZ > 450 ? Math.max(0, 1 - (effZ - 450) / 200) : 1;
@@ -179,7 +170,7 @@ export const Hero = () => {
     render();
 
     return () => cancelAnimationFrame(animId);
-  }, [mousePos]);
+  }, []);
 
   return (
     <section id="home" className={styles.heroSection} ref={containerRef}>
