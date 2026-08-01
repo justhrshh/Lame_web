@@ -1,0 +1,364 @@
+.portfolioSection {
+  position: relative;
+  padding: var(--section-padding-y) 0;
+  background-color: var(--bg-primary);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 4rem;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.filterTabs {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  background: var(--bg-card);
+  padding: 0.4rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-pill);
+}
+
+.filterBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--border-radius-pill);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filterBtnActive {
+  background: #FFFFFF;
+  color: #0A0A0A;
+  font-weight: 700;
+}
+
+.portfolioGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 2.5rem;
+}
+
+.projectCard {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform 0.4s var(--ease-out-expo), border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.projectCard:hover {
+  transform: translateY(-8px) rotate(-0.5deg) scale(1.015);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95), 0 0 45px rgba(255, 255, 255, 0.08);
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+}
+
+.projectImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(30%) contrast(105%);
+  transition: transform 0.7s var(--ease-out-expo), filter 0.7s ease;
+}
+
+.projectCard:hover .projectImg {
+  transform: scale(1.08);
+  filter: grayscale(0%) contrast(110%);
+}
+
+.imageOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(28, 28, 28, 0.95) 100%);
+}
+
+.statBadge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #FFFFFF;
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-light);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-pill);
+}
+
+.budgetBadge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-light);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-pill);
+}
+
+.cardMeta {
+  padding: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.metaTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.categoryTag {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.yearTag {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+
+.projectTitle {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  color: #FFFFFF;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.projectDesc {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  font-weight: 300;
+}
+
+.techTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.techTag {
+  font-size: 0.62rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--border-radius-pill);
+}
+
+.viewLinkRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+.viewLinkText {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
+}
+
+.viewArrow {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.projectCard:hover .viewLinkText {
+  color: #FFFFFF;
+}
+
+.projectCard:hover .viewArrow {
+  transform: translateX(4px);
+  color: #FFFFFF;
+}
+
+/* Modal Styles */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(20px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.modalContainer {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  max-width: 950px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.95);
+  animation: modalScale 0.35s var(--ease-out-expo);
+}
+
+@keyframes modalScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modalCloseBtn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-light);
+  color: #FFFFFF;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.modalGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.modalImageCol {
+  width: 100%;
+  height: 100%;
+  min-height: 350px;
+}
+
+.modalImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modalInfoCol {
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.modalCategory {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+}
+
+.modalTitle {
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  color: #FFFFFF;
+}
+
+.modalDesc {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.modalDetailsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  padding: 1rem;
+  border-radius: var(--border-radius-sm);
+}
+
+.detailLabel {
+  display: block;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.detailVal {
+  font-size: 0.85rem;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.modalCtaPrimary {
+  padding: 0.8rem 1.6rem;
+  background: #FFFFFF;
+  color: #0A0A0A;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  border-radius: var(--border-radius-pill);
+  text-decoration: none;
+
+}
+
+.modalCtaSecondary {
+  padding: 0.8rem 1.6rem;
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  border-radius: var(--border-radius-pill);
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .modalGrid {
+    grid-template-columns: 1fr;
+  }
+  .portfolioGrid {
+    grid-template-columns: 1fr;
+  }
+}

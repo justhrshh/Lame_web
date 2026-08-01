@@ -1,0 +1,61 @@
+/* Editorial Luxury Typography Styles */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.heading-display {
+  font-family: var(--font-serif);
+  font-size: clamp(2.8rem, 7vw, 6.5rem);
+  line-height: 1.02;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+}
+
+.heading-section {
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 4.5vw, 4rem);
+  line-height: 1.08;
+  font-weight: 300;
+}
+
+.heading-card {
+  font-family: var(--font-serif);
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  line-height: 1.2;
+  font-weight: 400;
+}
+
+.subheading {
+  font-family: var(--font-sans);
+  font-size: clamp(0.95rem, 1.4vw, 1.25rem);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  font-weight: 300;
+  max-width: 680px;
+}
+
+.caption-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.serif-italic {
+  font-style: italic;
+  font-family: var(--font-display);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #FFFFFF 0%, #D6D6D6 50%, #8D8D8D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

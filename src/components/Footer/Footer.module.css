@@ -1,0 +1,248 @@
+.footerSection {
+  position: relative;
+  background-color: #060606;
+  border-top: 1px solid var(--border-light);
+  padding: 5rem 0 3rem;
+}
+
+.dividerContainer {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dividerSvg {
+  width: 100%;
+  height: 100%;
+}
+
+.footerTop {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  padding-bottom: 4rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.brandGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  max-width: 480px;
+}
+
+.footerLogo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.logoSymbol {
+  width: 32px;
+  height: 32px;
+  background: #FFFFFF;
+  color: #0A0A0A;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.logoText {
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #FFFFFF;
+}
+
+.logoAccent {
+  color: var(--text-muted);
+}
+
+.brandDesc {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  font-weight: 300;
+}
+
+.newsletterBox {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.newsletterTitle {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.newsletterDesc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.subForm {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.subInput {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-pill);
+  padding: 0.7rem 1.2rem;
+  color: #FFFFFF;
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.subBtn {
+  background: #FFFFFF;
+  color: #0A0A0A;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  border: none;
+  border-radius: var(--border-radius-pill);
+  padding: 0 1.4rem;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.subBtn:hover {
+  opacity: 0.85;
+}
+
+.subSuccess {
+  font-size: 0.85rem;
+  color: #28c840;
+  padding: 0.6rem 0;
+  font-weight: 600;
+}
+
+.footerMid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 4rem;
+  padding: 4rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.colTitle {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 1.5rem;
+}
+
+.linkList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.footerLink {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  letter-spacing: 0.12em;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.footerLink:hover {
+  color: #FFFFFF;
+  transform: translateX(4px);
+}
+
+.socialGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.socialCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-md);
+  padding: 1rem;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  transition: all 0.3s ease;
+}
+
+.socialCard:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+}
+
+.socialName {
+  font-size: 0.85rem;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+.socialHandle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.footerBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 2.5rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.copyrightText {
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+}
+
+.systemStatus {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #28c840;
+  box-shadow: 0 0 8px #28c840;
+}
+
+@media (max-width: 900px) {
+  .footerTop, .footerMid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+}

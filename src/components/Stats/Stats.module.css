@@ -1,0 +1,184 @@
+.statsSection {
+  position: relative;
+  padding: var(--section-padding-y) 0;
+  background-color: var(--bg-primary);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.sectionHeader {
+  margin-bottom: 4rem;
+  max-width: 800px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+  margin-bottom: 5rem;
+}
+
+.statCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.ringContainer {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  margin-bottom: 1.2rem;
+}
+
+.ringSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ringBg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 6;
+}
+
+.ringProgress {
+  fill: none;
+  stroke: #FFFFFF;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.8s var(--ease-out-expo);
+}
+
+.ringCenterText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.counterValue {
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.counterSuffix {
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+.statLabel {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  color: #FFFFFF;
+  font-weight: 400;
+  margin-bottom: 0.4rem;
+}
+
+.statDesc {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  font-weight: 300;
+}
+
+/* Growth Chart Panel */
+.chartPanel {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-lg);
+  padding: 2.5rem;
+  box-shadow: var(--shadow-card);
+}
+
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.chartTitle {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  color: #FFFFFF;
+  margin-bottom: 0.3rem;
+}
+
+.chartSubtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.chartLegend {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.svgChartWrapper {
+  width: 100%;
+  height: 220px;
+}
+
+.svgChart {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.gridLine {
+  stroke: rgba(255, 255, 255, 0.04);
+  stroke-dasharray: 4;
+}
+
+.chartLine {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  transition: stroke-dashoffset 2.2s var(--ease-out-expo);
+}
+
+.chartLineAnimated {
+  stroke-dashoffset: 0;
+}
+
+.chartPoint {
+  fill: #0A0A0A;
+  stroke: #FFFFFF;
+  stroke-width: 3;
+}
+
+.chartXText {
+  fill: var(--text-muted);
+  font-size: 11px;
+  font-family: var(--font-sans);
+  text-anchor: middle;
+}
+
+.chartValText {
+  fill: #FFFFFF;
+  font-size: 11px;
+  font-family: var(--font-serif);
+  text-anchor: middle;
+  font-weight: 600;
+}

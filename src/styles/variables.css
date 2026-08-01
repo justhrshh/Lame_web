@@ -1,0 +1,48 @@
+:root {
+  /* Color Palette - Pure Black, White, Shades of Gray */
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #161616;
+  --bg-card: #1C1C1C;
+  --bg-glass: rgba(28, 28, 28, 0.55);
+  --bg-glass-nav: rgba(18, 18, 18, 0.7);
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #D6D6D6;
+  --text-muted: #8D8D8D;
+  --text-dim: #555555;
+
+  /* Borders & Highlights */
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(255, 255, 255, 0.18);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  
+  /* Shadows & Ambient Glows */
+  --glow-subtle: rgba(255, 255, 255, 0.05);
+  --glow-accent: rgba(255, 255, 255, 0.12);
+  --shadow-card: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 255, 255, 0.02);
+  --shadow-hover: 0 30px 70px rgba(0, 0, 0, 0.9), 0 0 40px rgba(255, 255, 255, 0.08);
+
+  /* Typography */
+  --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Playfair Display', serif;
+
+  /* Layout & Spacing */
+  --max-width: 1400px;
+  --container-padding: clamp(1.25rem, 5vw, 4rem);
+  --section-padding-y: clamp(5rem, 12vw, 10rem);
+  --border-radius-sm: 8px;
+  --border-radius-md: 16px;
+  --border-radius-lg: 24px;
+  --border-radius-pill: 9999px;
+
+  /* Transitions */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+  --transition-fast: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* 3D Depth Parameters */
+  --perspective: 1200px;
+}
