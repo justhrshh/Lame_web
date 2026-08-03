@@ -1,73 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { NAV_LINKS } from '../../data/navigationData';
 import styles from './Navbar.module.css';
 
 export const Navbar = () => {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
+  const toggleMenu = () => setMenuOpen(!menuOpen);
 
   return (
-    <header className={`${styles.navbarWrapper} ${scrolled ? styles.navbarScrolled : ''}`}>
+    <header className={styles.navbarWrapper}>
       <nav className={styles.navbarContainer}>
-        {/* Brand Logo */}
+        {/* Left Side: Brand Logo & Name */}
         <a href="#home" className={styles.logo}>
           <span className={styles.logoSymbol}>L</span>
           <span className={styles.logoText}>LAME<span className={styles.logoAccent}>.DEV</span></span>
         </a>
 
-        {/* Desktop Menu Links */}
-        <div className={styles.navMenu}>
-          {NAV_LINKS.map((link) => (
-            <a 
-              key={link.name} 
-              href={link.href} 
-              className={styles.navLink}
-            >
-              <span className={styles.linkText} data-text={link.name}>
-                {link.name}
-              </span>
-              <span className={styles.linkUnderline} />
-            </a>
-          ))}
-        </div>
-
-        {/* Mobile Hamburger Toggle */}
+        {/* Right Side: 3-Bar Hamburger Toggle */}
         <button 
-          className={`${styles.hamburger} ${mobileMenuOpen ? styles.hamburgerActive : ''}`}
-          onClick={toggleMobileMenu}
-          aria-label="Toggle menu"
+          className={`${styles.hamburgerBtn} ${menuOpen ? styles.hamburgerActive : ''}`}
+          onClick={toggleMenu}
+          aria-label="Toggle Navigation Menu"
         >
+          <span className={styles.bar} />
           <span className={styles.bar} />
           <span className={styles.bar} />
         </button>
       </nav>
 
-      {/* Mobile Drawer Overlay */}
-      <div className={`${styles.mobileDrawer} ${mobileMenuOpen ? styles.mobileDrawerOpen : ''}`}>
+      {/* Navigation Links Drawer Overlay */}
+      <div className={`${styles.menuDrawer} ${menuOpen ? styles.menuDrawerOpen : ''}`}>
         <div className={styles.drawerHeader}>
-          <span className={styles.logoText}>LAME<span className={styles.logoAccent}>.DEV</span></span>
-          <button className={styles.closeButton} onClick={toggleMobileMenu}>&times;</button>
+          <a href="#home" className={styles.logo} onClick={() => setMenuOpen(false)}>
+            <span className={styles.logoSymbol}>L</span>
+            <span className={styles.logoText}>LAME<span className={styles.logoAccent}>.DEV</span></span>
+          </a>
         </div>
-        <div className={styles.mobileNavMenu}>
-          {NAV_LINKS.map((link) => (
+
+        <div className={styles.drawerNavMenu}>
+          {NAV_LINKS.map((link, idx) => (
             <a
               key={link.name}
               href={link.href}
-              className={styles.mobileNavLink}
-              onClick={() => setMobileMenuOpen(false)}
+              className={styles.drawerNavLink}
+              onClick={() => setMenuOpen(false)}
             >
-              {link.name}
+              <span className={styles.linkNumber}>0{idx + 1}</span>
+              <span className={styles.drawerLinkText}>{link.name}</span>
             </a>
           ))}
         </div>
@@ -75,3 +54,5 @@ export const Navbar = () => {
     </header>
   );
 };
+
+export default Navbar;

@@ -1,5 +1,9 @@
 import React, { useEffect } from 'react';
 import Lenis from 'lenis';
+import gsap from 'gsap';
+import ScrollTrigger from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 // Global & Component Styles
 import './styles/globals.css';
@@ -7,6 +11,7 @@ import './styles/globals.css';
 // Components
 import { Navbar } from './components/Navbar/Navbar';
 import { Hero } from './components/Hero/Hero';
+import { CinematicAbout } from './components/CinematicAbout/CinematicAbout';
 import { About } from './components/About/About';
 import { Services } from './components/Services/Services';
 import { Portfolio } from './components/Portfolio/Portfolio';
@@ -36,15 +41,17 @@ export function App() {
       touchMultiplier: 1.8
     });
 
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
+    // Connect Lenis → GSAP ScrollTrigger update
+    lenis.on('scroll', ScrollTrigger.update);
 
-    requestAnimationFrame(raf);
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+    gsap.ticker.lagSmoothing(0);
 
     return () => {
       lenis.destroy();
+      gsap.ticker.remove(lenis.raf);
     };
   }, []);
 
@@ -68,6 +75,7 @@ export function App() {
       {/* Main Studio Page Flow */}
       <main>
         <Hero />
+        <CinematicAbout />
         <About />
         <Services />
         <Portfolio />
@@ -83,3 +91,4 @@ export function App() {
 }
 
 export default App;
+

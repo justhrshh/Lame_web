@@ -710,3 +710,162 @@
     justify-content: center;
   }
 }
+
+/* ── Unified 3D About Stage Overlay ───────────────────────────────────── */
+.aboutStageOverlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: opacity, transform;
+}
+
+.aboutArcSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.75;
+}
+
+.aboutWatermark {
+  position: absolute;
+  bottom: 8%;
+  left: 5%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.04;
+  user-select: none;
+}
+
+.aboutWatermarkText {
+  font-family: var(--font-sans);
+  font-size: clamp(2.5rem, 6.5vw, 6.5rem);
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  color: #FFFFFF;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.aboutTypographyGroup {
+  position: absolute;
+  top: 8%;
+  right: 5%;
+  max-width: 660px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  z-index: 10;
+  text-align: left;
+  pointer-events: auto;
+}
+
+.aboutLabel {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: rgba(255, 255, 255, 0.48);
+  text-transform: uppercase;
+}
+
+.aboutHeading {
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 3.6vw, 3.5rem);
+  line-height: 1.1;
+  font-weight: 400;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+  text-shadow: 0 4px 25px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.aboutParagraph {
+  font-family: var(--font-sans);
+  font-size: clamp(0.88rem, 1.05vw, 1.02rem);
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 400;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95);
+}
+
+/* Smooth Cross-Fade Image Overlay inside 3D Cards */
+.cardAboutImageOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  overflow: hidden;
+  border-radius: var(--border-radius-md);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.aboutCardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.aboutCardVignette {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 30%,
+    rgba(10, 10, 12, 0.4) 65%,
+    rgba(10, 10, 12, 0.88) 100%
+  );
+  pointer-events: none;
+}
+
+/* ── About Stage Responsiveness (Tablet & Mobile) ─────────────────────── */
+@media (max-width: 1024px) {
+  .aboutTypographyGroup {
+    top: 9%;
+    right: 4%;
+    max-width: 540px;
+  }
+}
+
+@media (max-width: 768px) {
+  .aboutTypographyGroup {
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 360px;
+    gap: 0.65rem;
+    text-align: center;
+    align-items: center;
+  }
+  .aboutLabel {
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    text-align: center;
+  }
+  .aboutHeading {
+    font-size: clamp(1.35rem, 5.2vw, 2.1rem);
+    line-height: 1.15;
+    text-align: center;
+  }
+  .aboutParagraph {
+    font-size: clamp(0.75rem, 3.2vw, 0.88rem);
+    line-height: 1.48;
+    text-align: center;
+  }
+  .aboutWatermark {
+    display: none;
+  }
+}
+

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MOCKUP_PROJECTS } from '../../data/mockupsData';
+import { aboutPageCards } from '../../data/aboutPageCards';
 import styles from './Hero.module.css';
 
 export const Hero = () => {
@@ -8,6 +9,7 @@ export const Hero = () => {
   const viewportRef = useRef(null);
   const cardRefs = useRef([]);
   const textOverlayRef = useRef(null);
+  const aboutStageOverlayRef = useRef(null);
 
   const mousePosRef = useRef({ targetX: 0, targetY: 0 });
   const activeProjectRef = useRef(null);
@@ -99,35 +101,40 @@ export const Hero = () => {
 
       const currentScroll = window.scrollY;
       const vh = window.innerHeight;
-      const scrollFlight = currentScroll * 1.8;
 
-      // ── Extended dissolve factor ───────────────────────────
-      // Phase 0 (rawFactor 0→1): cards drift outward in hero (0→0.4vh scroll)
-      // Phase 1 (rawFactor 1→2): cards enter About section, ghost-fade (0.4→0.8vh)
-      // Phase 2 (rawFactor >2):  cards fully gone, viewport3D hidden
-      const rawDissolveFactor = Math.min(2.5, currentScroll / (vh * 0.4));
-      const scrollDissolveFactor = Math.min(1, rawDissolveFactor);
-      const aboutEntryFactor = Math.max(0, Math.min(1, rawDissolveFactor - 1.0));
-      const cardsFullyGone = rawDissolveFactor >= 2.2;
+      // Clamp scrollFlight so the gallery is never pushed past the camera lens (Z clipping plane)
+      const scrollFlight = Math.min(140, currentScroll * 0.35);
+
+      // ── Phase 1 Factors ──────────────────────────────────
+      // Hero exit factor: 0→1 as scroll goes from 0→350px
+      const heroExitFactor = Math.min(1, currentScroll / 350);
+
+      // CinematicAbout active factor: 0→1 as scroll travels past Hero into pinned transition
+      const cinematicAboutFactor = Math.max(0, Math.min(1, (currentScroll - vh * 0.25) / (vh * 1.3)));
+
+      // Disable card mouse interaction when transition begins
+      const transitionActive = currentScroll > 50;
 
       // ── viewport3D: switch to fixed so cards survive in viewport as page scrolls
       if (viewportRef.current) {
-        if (currentScroll > 5 && !cardsFullyGone) {
+        if (currentScroll > 5 && currentScroll < vh * 3.5) {
           viewportRef.current.style.position = 'fixed';
           viewportRef.current.style.inset = '0';
-          // Disable pointer events once cards enter About section territory
-          viewportRef.current.style.pointerEvents = currentScroll > vh * 0.5 ? 'none' : 'auto';
+          viewportRef.current.style.pointerEvents = transitionActive ? 'none' : 'auto';
+          viewportRef.current.style.visibility = 'visible';
         } else if (currentScroll <= 5) {
           viewportRef.current.style.position = 'absolute';
           viewportRef.current.style.inset = '0';
           viewportRef.current.style.pointerEvents = 'auto';
+          viewportRef.current.style.visibility = 'visible';
+        } else {
+          viewportRef.current.style.visibility = 'hidden';
         }
-        viewportRef.current.style.visibility = cardsFullyGone ? 'hidden' : 'visible';
       }
 
-      // Global gallery rotation from mouse perspective
-      const sceneRotY = currMouseX * 12;
-      const sceneRotX = -currMouseY * 8;
+      // Camera rotation & movement — camera rotates, making objects travel naturally
+      const sceneRotY = (transitionActive ? 0 : currMouseX * 12) + (cinematicAboutFactor * -14);
+      const sceneRotX = (transitionActive ? 0 : -currMouseY * 8) + (cinematicAboutFactor * 3);
 
       // Initial camera depth zoom during slow motion load
       const initialCameraZ = (1 - easedLoad) * -450;
@@ -140,21 +147,50 @@ export const Hero = () => {
         `;
       }
 
-      // Hero text 3D parallax, tilt & fade on scroll & mouse move
+      // Hero text completely dissolves before camera settles
       if (textOverlayRef.current) {
-        const fade = Math.max(0, 1 - currentScroll / 450);
-        const slideUp = currentScroll * 0.6;
-        const textTiltX = -currMouseY * 2.5;
-        const textTiltY = currMouseX * 3.5;
+        const textFade = Math.max(0, 1 - heroExitFactor);
+        const slideUp = currentScroll * 0.5;
+        const textTiltX = transitionActive ? 0 : -currMouseY * 2.5;
+        const textTiltY = transitionActive ? 0 : currMouseX * 3.5;
 
-        textOverlayRef.current.style.opacity = fade.toFixed(3);
+        textOverlayRef.current.style.opacity = textFade.toFixed(3);
         textOverlayRef.current.style.transform = `
           translate3d(0, -${slideUp}px, 50px)
           rotateX(${textTiltX}deg)
           rotateY(${textTiltY}deg)
         `;
-        textOverlayRef.current.style.pointerEvents = fade < 0.1 ? 'none' : 'auto';
+        textOverlayRef.current.style.pointerEvents = textFade < 0.1 ? 'none' : 'auto';
       }
+
+      // About Stage Editorial Text Overlay fades in ONLY AFTER cards settle in place (cinematicAboutFactor > 0.65)
+      if (aboutStageOverlayRef.current) {
+        const aboutFade = Math.max(0, Math.min(1, (cinematicAboutFactor - 0.65) / 0.3));
+        aboutStageOverlayRef.current.style.opacity = aboutFade.toFixed(3);
+        aboutStageOverlayRef.current.style.pointerEvents = aboutFade > 0.5 ? 'auto' : 'none';
+      }
+
+      // ── VIEWPORT DESTINATIONS FOR THE 2 FEATURED CARDS (RESPONSIVE) ──
+      const isMobile = window.innerWidth < 768;
+      const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+
+      const CARD_TARGETS = isMobile
+        ? [
+            // Mobile: Framed layout (Card 0 top center, Card 1 bottom center framing centered text)
+            { x: 0, y: -34, z: 100, rx: 0, ry: 0, rz: 0, scale: 0.68 },
+            { x: 0, y: 32, z: 130, rx: 0, ry: 0, rz: 0, scale: 0.72 }
+          ]
+        : isTablet
+        ? [
+            // Tablet: Slightly tighter offsets
+            { x: -20, y: -20, z: 130, rx: 0, ry: 0, rz: 0, scale: 0.88 },
+            { x: 16, y: 14, z: 160, rx: 2, ry: -2, rz: -2, scale: 0.92 }
+          ]
+        : [
+            // Desktop: Full editorial composition
+            { x: -28, y: -22, z: 140, rx: 0, ry: 0, rz: 0, scale: 1.0 },
+            { x: 20, y: 13, z: 180, rx: 2, ry: -3, rz: -2, scale: 1.02 }
+          ];
 
       // Animate individual 3D Cards
       cardRefs.current.forEach((cardEl, idx) => {
@@ -174,7 +210,7 @@ export const Hero = () => {
         const loadScale = 0.88 + easedCardLoad * 0.12;
         const cardLoadOpacity = Math.min(1, cardProgress * 1.4);
 
-        // Multi-harmonic floating & breathing sine wave animations
+        // Multi-harmonic floating sine wave
         const floatY = Math.sin(time * speed.y * 50 + idx) * amp.y;
         const driftX = Math.cos(time * speed.x * 50 + idx * 0.7) * amp.x;
         const tiltX = Math.sin(time * speed.rot * 50 + idx * 0.5) * amp.rot;
@@ -182,78 +218,81 @@ export const Hero = () => {
         const breathScale = 1 + Math.sin(time * 1.2 + idx) * 0.015;
 
         const depthFactor = (initialPos.z + 500) / 1000;
-        const mouseShiftX = currMouseX * (14 * depthFactor);
-        const mouseShiftY = currMouseY * (10 * depthFactor);
+        const mouseShiftX = transitionActive ? 0 : currMouseX * (14 * depthFactor);
+        const mouseShiftY = transitionActive ? 0 : currMouseY * (10 * depthFactor);
 
         const currentX = initialPos.x + driftX + mouseShiftX;
         const currentY = initialPos.y + floatY + mouseShiftY;
 
-        // ── Scroll-dissolve: cards drift outward then sink into About section ──
-        const posMag = Math.sqrt(initialPos.x * initialPos.x + initialPos.y * initialPos.y) || 1;
-        const dirX = initialPos.x / posMag;
-        const dirY = initialPos.y / posMag;
+        let finalX, finalY, finalZ, finalScale, finalRotX, finalRotY, finalRotZ, finalOpacity, finalBlur;
 
-        // Phase 1 (hero): outward drift along each card's own radial direction
-        const dissolveCurve = scrollDissolveFactor * scrollDissolveFactor; // ease-in
-        const heroDriftX = dirX * dissolveCurve * 28;
-        const heroDriftY = dirY * dissolveCurve * 18;
-        const dissolveRotZ = initialPos.rz + dirX * dissolveCurve * 10;
-        const dissolveScale = 1 - dissolveCurve * 0.06;
+        if (idx < 2) {
+          // ── Featured 2 Cards: Physical 3D flight into exact viewport destinations ──
+          const stagger = idx * 0.15; // Staggered flight initiation
+          const cardFlightT = Math.max(0, Math.min(1, (cinematicAboutFactor - stagger) / (1 - stagger)));
 
-        // Phase 2 (About entry): cards sink DOWNWARD in viewport — independent of direction
-        // aboutEntryFactor: 0→1 as scroll goes from 0.4→0.8vh
-        // Stagger each card slightly so they don't all move identically
-        const cardStagger = (idx % 5) * 0.06; // 0→0.24 stagger
-        const aboutCurve = Math.max(0, aboutEntryFactor - cardStagger);
-        const aboutSink = aboutCurve * 65; // sink 65vh downward into About section
+          // Smooth GSAP-style quartic ease-out for physical 3D flight
+          const easeT = 1 - Math.pow(1 - cardFlightT, 4);
 
-        const finalX = currentX + heroDriftX;
-        const finalY = currentY + heroDriftY + aboutSink;
+          const target = CARD_TARGETS[idx];
 
-        // Only apply text safe-zone mask during hero phase (not About entry)
-        let centerOpacity = 1;
-        let centerBlur = 0;
-        let centerSaturate = 1;
-        if (dissolveCurve < 0.8 && aboutEntryFactor === 0) {
-          const clampedX = Math.max(-22, Math.min(22, finalX));
-          const dx = finalX - clampedX;
-          const clampedY = Math.max(-26, Math.min(22, finalY));
-          const dy = finalY - clampedY;
-          const normX = dx / 8;
-          const normY = dy / 8;
-          const centerDist = Math.sqrt(normX * normX + normY * normY);
-          const centerFactor = Math.min(1, Math.max(0, centerDist));
-          centerOpacity = 0.35 + centerFactor * 0.65;
-          centerBlur = (1 - centerFactor) * 2.5;
-          centerSaturate = 0.6 + centerFactor * 0.4;
+          // Micro-ambient motion at destination: max +-3px (~0.2vh), max +-0.4deg
+          const microFloatY = Math.sin(time * 1.2 + idx * 2) * 0.2;
+          const microFloatX = Math.cos(time * 0.9 + idx * 1.5) * 0.15;
+          const microRotZ = target.rz === 0 ? 0 : Math.sin(time * 0.8 + idx) * 0.4;
+
+          finalX = currentX + (target.x - currentX) * easeT + microFloatX * easeT;
+          finalY = currentY + (target.y - currentY) * easeT + microFloatY * easeT;
+          finalZ = (initialPos.z + loadZOffset) + (target.z - (initialPos.z + loadZOffset)) * easeT;
+
+          finalScale = loadScale * (1 + (target.scale - 1) * easeT);
+          finalRotX = (initialPos.rx + tiltX) * (1 - easeT) + target.rx * easeT;
+          finalRotY = (initialPos.ry + tiltY) * (1 - easeT) + target.ry * easeT;
+          finalRotZ = (initialPos.rz || 0) * (1 - easeT) + (target.rz + microRotZ) * easeT;
+
+          finalOpacity = cardLoadOpacity * (0.85 + 0.15 * easeT);
+          finalBlur = (1 - easeT) * 1.5;
+
+          // Smooth cross-fade card content to rich About media from aboutPageCards.js and remove browser header bar
+          const aboutImageOverlayEl = cardEl.querySelector(`.${styles.cardAboutImageOverlay}`);
+          if (aboutImageOverlayEl) {
+            aboutImageOverlayEl.style.opacity = easeT.toFixed(3);
+          }
+          const browserHeaderEl = cardEl.querySelector(`.${styles.browserHeader}`);
+          if (browserHeaderEl) {
+            browserHeaderEl.style.opacity = (1 - easeT).toFixed(3);
+          }
+        } else {
+          // ── Remaining cards (including MediPulse Health - Index 2): Drift outward into background depth ──
+          const posMag = Math.sqrt(initialPos.x * initialPos.x + initialPos.y * initialPos.y) || 1;
+          const dirX = initialPos.x / posMag;
+          const dirY = initialPos.y / posMag;
+
+          const heroDriftX = dirX * heroExitFactor * 25;
+          const heroDriftY = dirY * heroExitFactor * 15;
+
+          finalX = currentX + heroDriftX;
+          finalY = currentY + heroDriftY;
+          finalZ = initialPos.z + loadZOffset;
+          finalScale = loadScale * breathScale * (1 - cinematicAboutFactor * 0.15);
+          finalRotX = initialPos.rx + tiltX;
+          finalRotY = initialPos.ry + tiltY;
+          finalRotZ = initialPos.rz || 0;
+          finalOpacity = Math.max(0.08, cardLoadOpacity * (1 - cinematicAboutFactor * 0.92));
+          finalBlur = cinematicAboutFactor * 4;
         }
 
-        const effZ = initialPos.z + loadZOffset + scrollFlight;
-        const scrollOpacity = effZ > 450 ? Math.max(0, 1 - (effZ - 450) / 200) : 1;
-
-        // Opacity:
-        // Hero phase: gentle fade (stays mostly visible)
-        // About entry: ghost fade — cards become translucent as they sink into studio
-        const heroFade = 1 - dissolveCurve * 0.4;
-        const aboutGhostFade = aboutEntryFactor > 0 ? Math.max(0, 1 - aboutEntryFactor * 1.2) : 1;
-        const dissolveOpacity = heroFade * aboutGhostFade;
-
-        // In About section, cards are desaturated ghosts (no hovered state override)
-        const isHovered = aboutEntryFactor === 0 ? activeProjectRef.current === proj.id : false;
-
-        const finalOpacity = isHovered ? 1 : cardLoadOpacity * scrollOpacity * centerOpacity * dissolveOpacity;
-        const finalBlur = isHovered ? 0 : (centerBlur + aboutEntryFactor * 2);
-        const finalSaturate = isHovered ? 1 : (centerSaturate * (1 - aboutEntryFactor * 0.7));
+        const isHovered = !transitionActive && activeProjectRef.current === proj.id;
 
         cardEl.style.transform = `
-          translate3d(${finalX}vw, ${finalY}vh, ${initialPos.z + loadZOffset}px)
-          rotateX(calc(${initialPos.rx + tiltX}deg + var(--card-tilt-x, 0deg)))
-          rotateY(calc(${initialPos.ry + tiltY}deg + var(--card-tilt-y, 0deg)))
-          rotateZ(${dissolveRotZ}deg)
-          scale(${loadScale * breathScale * dissolveScale})
+          translate3d(${finalX}vw, ${finalY}vh, ${finalZ}px)
+          rotateX(${finalRotX}deg)
+          rotateY(${finalRotY}deg)
+          rotateZ(${finalRotZ}deg)
+          scale(${finalScale})
         `;
-        cardEl.style.opacity = finalOpacity.toFixed(2);
-        cardEl.style.filter = isHovered ? 'none' : `blur(${finalBlur.toFixed(1)}px) saturate(${finalSaturate.toFixed(2)})`;
+        cardEl.style.opacity = isHovered ? 1 : finalOpacity.toFixed(2);
+        cardEl.style.filter = isHovered ? 'none' : `blur(${finalBlur.toFixed(1)}px)`;
       });
 
       animId = requestAnimationFrame(render);
@@ -289,6 +328,18 @@ export const Hero = () => {
               <div className={styles.dynamicSpecularLight} />
               <div className={styles.hoverSheenBeam} />
 
+              {/* Full-Card Clean Image Overlay for About Stage (Loaded from aboutPageCards.js) */}
+              {idx < 2 && aboutPageCards[idx] && (
+                <div className={styles.cardAboutImageOverlay}>
+                  <img
+                    src={aboutPageCards[idx].image}
+                    alt={aboutPageCards[idx].title}
+                    className={styles.aboutCardImage}
+                  />
+                  <div className={styles.aboutCardVignette} />
+                </div>
+              )}
+
               {/* Card Browser Window Header (Depth Layer Z: 20px) */}
               <div className={styles.browserHeader}>
                 <div className={styles.trafficLights}>
@@ -300,7 +351,9 @@ export const Hero = () => {
                   <span className={styles.lockIcon}>🔒</span>
                   <span className={styles.urlText}>{proj.url.replace('https://', '')}</span>
                 </div>
-                <div className={styles.badgeCategory}>{proj.category}</div>
+                <div className={styles.badgeCategory}>
+                  {idx === 0 ? '01 // ABOUT US' : idx === 1 ? '02 // CREATIVE SHOWCASE' : proj.category}
+                </div>
               </div>
 
               {/* Card Body & Mockup Preview Graphic */}
@@ -349,6 +402,45 @@ export const Hero = () => {
               <div className={styles.cardGlow} />
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Unified 3D About Stage Overlay — text, watermark, and SVG arcs fade in as cards settle */}
+      <div className={styles.aboutStageOverlay} ref={aboutStageOverlayRef}>
+        {/* Decorative Background SVG Arc Lines (Matching Reference Image Inspiration) */}
+        <svg className={styles.aboutArcSvg} viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M -100 250 C 300 50, 600 450, 900 200"
+            stroke="rgba(255, 255, 255, 0.08)"
+            strokeWidth="1.5"
+            strokeDasharray="4 4"
+          />
+          <path
+            d="M 400 800 C 700 950, 1100 600, 1500 750"
+            stroke="rgba(255, 255, 255, 0.06)"
+            strokeWidth="1.2"
+          />
+          <circle cx="280" cy="180" r="160" stroke="rgba(255, 255, 255, 0.04)" strokeWidth="1" />
+          <circle cx="1150" cy="620" r="280" stroke="rgba(0, 229, 255, 0.035)" strokeWidth="1" />
+        </svg>
+
+        {/* Large Watermark Background Typography */}
+        <div className={styles.aboutWatermark}>
+          <span className={styles.aboutWatermarkText}>CRAFT</span>
+          <span className={styles.aboutWatermarkText}>VISION</span>
+          <span className={styles.aboutWatermarkText}>IMPACT</span>
+          <span className={styles.aboutWatermarkText}>DISCIPLINE</span>
+        </div>
+
+        {/* Upper Right Editorial Text Block */}
+        <div className={styles.aboutTypographyGroup}>
+          <span className={styles.aboutLabel}>01 // STUDIO OVERVIEW</span>
+          <h2 className={styles.aboutHeading}>
+            Designing Digital <span className="serif-italic text-cyan">Experiences</span> With Purpose & Precision.
+          </h2>
+          <p className={styles.aboutParagraph}>
+            At Lame Dev, we believe in the power of digital craft, restraint, and architectural clarity. Our mission is simple: to support ambitious brands and create lasting change through high-impact interactive systems—one detail at a time.
+          </p>
         </div>
       </div>
 

@@ -1,0 +1,32 @@
+.cinematicAboutSection {
+  position: relative;
+  width: 100vw;
+  height: 200vh;
+  background: transparent;
+  isolation: isolate;
+  pointer-events: none;
+}
+
+.pinnedStage {
+  position: sticky;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambientGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60vw;
+  height: 60vh;
+  background: radial-gradient(ellipse at center, rgba(0, 229, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 50%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+}
