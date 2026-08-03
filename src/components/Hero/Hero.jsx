@@ -1,15 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
+import styles from './Hero.module.css';
 import { MOCKUP_PROJECTS } from '../../data/mockupsData';
 import { aboutPageCards } from '../../data/aboutPageCards';
-import styles from './Hero.module.css';
 
 export const Hero = () => {
   const containerRef = useRef(null);
-  const galleryRef = useRef(null);
   const viewportRef = useRef(null);
+  const galleryRef = useRef(null);
   const cardRefs = useRef([]);
   const textOverlayRef = useRef(null);
   const aboutStageOverlayRef = useRef(null);
+  const aboutLabelRef = useRef(null);
+  const aboutHeadingRef = useRef(null);
+  const aboutParagraphRef = useRef(null);
+  const aboutWatermarkRef = useRef(null);
+  const aboutArcRef = useRef(null);
 
   const mousePosRef = useRef({ targetX: 0, targetY: 0 });
   const activeProjectRef = useRef(null);
@@ -21,9 +26,9 @@ export const Hero = () => {
     const handleResize = () => {
       const w = window.innerWidth;
       if (w < 768) {
-        setVisibleCardCount(6);
+        setVisibleCardCount(12);
       } else if (w < 1024) {
-        setVisibleCardCount(10);
+        setVisibleCardCount(16);
       } else {
         setVisibleCardCount(18);
       }
@@ -105,19 +110,22 @@ export const Hero = () => {
       // Clamp scrollFlight so the gallery is never pushed past the camera lens (Z clipping plane)
       const scrollFlight = Math.min(140, currentScroll * 0.35);
 
-      // ── Phase 1 Factors ──────────────────────────────────
+      // ── Phase 1 & 2 Factors ──────────────────────────────
       // Hero exit factor: 0→1 as scroll goes from 0→350px
       const heroExitFactor = Math.min(1, currentScroll / 350);
 
       // CinematicAbout active factor: 0→1 as scroll travels past Hero into pinned transition
       const cinematicAboutFactor = Math.max(0, Math.min(1, (currentScroll - vh * 0.25) / (vh * 1.3)));
 
+      // Phase 2 Universe Formation Factor: 0→1 as scroll travels past About reading position (vh * 1.4 -> vh * 3.3)
+      const universeFormationFactor = Math.max(0, Math.min(1, (currentScroll - vh * 1.4) / (vh * 1.9)));
+
       // Disable card mouse interaction when transition begins
       const transitionActive = currentScroll > 50;
 
       // ── viewport3D: switch to fixed so cards survive in viewport as page scrolls
       if (viewportRef.current) {
-        if (currentScroll > 5 && currentScroll < vh * 3.5) {
+        if (currentScroll > 5 && currentScroll < vh * 3.8) {
           viewportRef.current.style.position = 'fixed';
           viewportRef.current.style.inset = '0';
           viewportRef.current.style.pointerEvents = transitionActive ? 'none' : 'auto';
@@ -132,16 +140,17 @@ export const Hero = () => {
         }
       }
 
-      // Camera rotation & movement — camera rotates, making objects travel naturally
-      const sceneRotY = (transitionActive ? 0 : currMouseX * 12) + (cinematicAboutFactor * -14);
-      const sceneRotX = (transitionActive ? 0 : -currMouseY * 8) + (cinematicAboutFactor * 3);
+      // Camera rotation & subtle pullback in 3D space
+      const cameraPullbackZ = universeFormationFactor * -80;
+      const sceneRotY = (transitionActive ? 0 : currMouseX * 12) + (cinematicAboutFactor * -14) + (universeFormationFactor * 14);
+      const sceneRotX = (transitionActive ? 0 : -currMouseY * 8) + (cinematicAboutFactor * 3) - (universeFormationFactor * 3);
 
       // Initial camera depth zoom during slow motion load
       const initialCameraZ = (1 - easedLoad) * -450;
 
       if (galleryRef.current) {
         galleryRef.current.style.transform = `
-          translate3d(0, 0, ${initialCameraZ + scrollFlight}px)
+          translate3d(0, 0, ${initialCameraZ + scrollFlight + cameraPullbackZ}px)
           rotateX(${sceneRotX}deg)
           rotateY(${sceneRotY}deg)
         `;
@@ -163,11 +172,44 @@ export const Hero = () => {
         textOverlayRef.current.style.pointerEvents = textFade < 0.1 ? 'none' : 'auto';
       }
 
-      // About Stage Editorial Text Overlay fades in ONLY AFTER cards settle in place (cinematicAboutFactor > 0.65)
+      // ── STEP 1: Fast & Clean About Content Exit (Completes early by universeFormationFactor = 0.18) ──
+      const aboutEntranceFade = Math.max(0, Math.min(1, (cinematicAboutFactor - 0.65) / 0.3));
+      const aboutExitFade = Math.max(0, Math.min(1, universeFormationFactor / 0.18));
+
       if (aboutStageOverlayRef.current) {
-        const aboutFade = Math.max(0, Math.min(1, (cinematicAboutFactor - 0.65) / 0.3));
-        aboutStageOverlayRef.current.style.opacity = aboutFade.toFixed(3);
-        aboutStageOverlayRef.current.style.pointerEvents = aboutFade > 0.5 ? 'auto' : 'none';
+        const netAboutOpacity = aboutEntranceFade * (1 - aboutExitFade);
+        aboutStageOverlayRef.current.style.opacity = netAboutOpacity.toFixed(3);
+        aboutStageOverlayRef.current.style.pointerEvents = netAboutOpacity > 0.5 ? 'auto' : 'none';
+      }
+
+      // Staggered About Text Exit
+      if (aboutLabelRef.current) {
+        const labelExit = Math.max(0, Math.min(1, universeFormationFactor / 0.12));
+        aboutLabelRef.current.style.opacity = (1 - labelExit).toFixed(3);
+        aboutLabelRef.current.style.transform = `translateY(-${labelExit * 35}px)`;
+      }
+
+      if (aboutHeadingRef.current) {
+        const headingExit = Math.max(0, Math.min(1, (universeFormationFactor - 0.04) / 0.14));
+        aboutHeadingRef.current.style.opacity = (1 - headingExit).toFixed(3);
+        aboutHeadingRef.current.style.filter = `blur(${headingExit * 6}px)`;
+        aboutHeadingRef.current.style.transform = `translateY(-${headingExit * 55}px)`;
+      }
+
+      if (aboutParagraphRef.current) {
+        const paragraphExit = Math.max(0, Math.min(1, (universeFormationFactor - 0.08) / 0.12));
+        aboutParagraphRef.current.style.opacity = (1 - paragraphExit).toFixed(3);
+        aboutParagraphRef.current.style.transform = `translateY(-${paragraphExit * 40}px)`;
+      }
+
+      if (aboutWatermarkRef.current) {
+        const watermarkExit = Math.max(0, Math.min(1, universeFormationFactor / 0.16));
+        aboutWatermarkRef.current.style.opacity = (1 - watermarkExit).toFixed(3);
+      }
+
+      if (aboutArcRef.current) {
+        const arcExit = Math.max(0, Math.min(1, universeFormationFactor / 0.16));
+        aboutArcRef.current.style.opacity = (1 - arcExit).toFixed(3);
       }
 
       // ── VIEWPORT DESTINATIONS FOR THE 2 FEATURED CARDS (RESPONSIVE) ──
@@ -176,23 +218,44 @@ export const Hero = () => {
 
       const CARD_TARGETS = isMobile
         ? [
-            // Mobile: Framed layout (Card 0 top center, Card 1 bottom center framing centered text)
             { x: 0, y: -34, z: 100, rx: 0, ry: 0, rz: 0, scale: 0.68 },
             { x: 0, y: 32, z: 130, rx: 0, ry: 0, rz: 0, scale: 0.72 }
           ]
         : isTablet
         ? [
-            // Tablet: Slightly tighter offsets
             { x: -20, y: -20, z: 130, rx: 0, ry: 0, rz: 0, scale: 0.88 },
             { x: 16, y: 14, z: 160, rx: 2, ry: -2, rz: -2, scale: 0.92 }
           ]
         : [
-            // Desktop: Full editorial composition
             { x: -28, y: -22, z: 140, rx: 0, ry: 0, rz: 0, scale: 1.0 },
             { x: 20, y: 13, z: 180, rx: 2, ry: -3, rz: -2, scale: 1.02 }
           ];
 
-      // Animate individual 3D Cards
+      // ── Animate individual 3D Cards ──────────────────────────────────────
+      const totalUniverseCards = Math.min(MOCKUP_PROJECTS.length, visibleCardCount);
+
+      // Predefined 18 slot angles mapping spatially so Card 0 (top-left) releases to top-left, Card 1 (lower-right) releases to lower-right
+      const CIRCLE_SLOT_ANGLES = [
+        Math.PI * 0.85, // Card 0: Top-Left slot (~153°) -> Shortest path from top-left!
+        Math.PI * 0.15, // Card 1: Lower-Right slot (~27°) -> Shortest path from lower-right!
+        Math.PI * 0.00, // Card 2: Far Right
+        Math.PI * 0.30, // Card 3: Lower Right 2
+        Math.PI * 0.45, // Card 4: Bottom Right
+        Math.PI * 0.60, // Card 5: Bottom Center
+        Math.PI * 0.72, // Card 6: Bottom Left
+        Math.PI * 1.00, // Card 7: Far Left
+        Math.PI * 1.15, // Card 8: Upper Left 1
+        Math.PI * 1.30, // Card 9: Upper Left 2
+        Math.PI * 1.45, // Card 10: Top Left
+        Math.PI * 1.60, // Card 11: Top Center
+        Math.PI * 1.75, // Card 12: Top Right 1
+        Math.PI * 1.90, // Card 13: Top Right 2
+        Math.PI * 0.10, // Card 14: Mid Right 1
+        Math.PI * 0.40, // Card 15: Mid Bottom Right
+        Math.PI * 0.90, // Card 16: Mid Bottom Left
+        Math.PI * 1.25, // Card 17: Mid Top Left
+      ];
+
       cardRefs.current.forEach((cardEl, idx) => {
         if (!cardEl) return;
 
@@ -202,7 +265,7 @@ export const Hero = () => {
         const { initialPos, speed, amp } = proj;
 
         // Staggered card load progress
-        const staggerDelay = idx * 0.03;
+        const staggerDelay = idx * 0.02;
         const cardProgress = Math.max(0, Math.min(1, (loadProgress - staggerDelay) / 0.5));
         const easedCardLoad = 1 - Math.pow(1 - cardProgress, 3);
 
@@ -227,16 +290,13 @@ export const Hero = () => {
         let finalX, finalY, finalZ, finalScale, finalRotX, finalRotY, finalRotZ, finalOpacity, finalBlur;
 
         if (idx < 2) {
-          // ── Featured 2 Cards: Physical 3D flight into exact viewport destinations ──
-          const stagger = idx * 0.15; // Staggered flight initiation
+          // Featured 2 Cards: Physical 3D flight into exact viewport destinations
+          const stagger = idx * 0.15;
           const cardFlightT = Math.max(0, Math.min(1, (cinematicAboutFactor - stagger) / (1 - stagger)));
-
-          // Smooth GSAP-style quartic ease-out for physical 3D flight
           const easeT = 1 - Math.pow(1 - cardFlightT, 4);
 
           const target = CARD_TARGETS[idx];
 
-          // Micro-ambient motion at destination: max +-3px (~0.2vh), max +-0.4deg
           const microFloatY = Math.sin(time * 1.2 + idx * 2) * 0.2;
           const microFloatX = Math.cos(time * 0.9 + idx * 1.5) * 0.15;
           const microRotZ = target.rz === 0 ? 0 : Math.sin(time * 0.8 + idx) * 0.4;
@@ -253,17 +313,16 @@ export const Hero = () => {
           finalOpacity = cardLoadOpacity * (0.85 + 0.15 * easeT);
           finalBlur = (1 - easeT) * 1.5;
 
-          // Smooth cross-fade card content to rich About media from aboutPageCards.js and remove browser header bar
           const aboutImageOverlayEl = cardEl.querySelector(`.${styles.cardAboutImageOverlay}`);
           if (aboutImageOverlayEl) {
-            aboutImageOverlayEl.style.opacity = easeT.toFixed(3);
+            aboutImageOverlayEl.style.opacity = Math.max(easeT * (1 - universeFormationFactor), universeFormationFactor * 0.98).toFixed(3);
           }
           const browserHeaderEl = cardEl.querySelector(`.${styles.browserHeader}`);
           if (browserHeaderEl) {
-            browserHeaderEl.style.opacity = (1 - easeT).toFixed(3);
+            browserHeaderEl.style.opacity = Math.max(0, (1 - easeT) * (1 - universeFormationFactor)).toFixed(3);
           }
         } else {
-          // ── Remaining cards (including MediPulse Health - Index 2): Drift outward into background depth ──
+          // Remaining outer cards: fade out during About reading so they NEVER pile up behind featured cards
           const posMag = Math.sqrt(initialPos.x * initialPos.x + initialPos.y * initialPos.y) || 1;
           const dirX = initialPos.x / posMag;
           const dirY = initialPos.y / posMag;
@@ -278,8 +337,71 @@ export const Hero = () => {
           finalRotX = initialPos.rx + tiltX;
           finalRotY = initialPos.ry + tiltY;
           finalRotZ = initialPos.rz || 0;
-          finalOpacity = Math.max(0.08, cardLoadOpacity * (1 - cinematicAboutFactor * 0.92));
-          finalBlur = cinematicAboutFactor * 4;
+
+          // Fade outer cards to 0 during About reading, then fade in smoothly at their circle positions during universe formation
+          finalOpacity = (1 - cinematicAboutFactor) * cardLoadOpacity + universeFormationFactor * 0.92;
+          finalBlur = (1 - universeFormationFactor) * (cinematicAboutFactor * 4);
+
+          const aboutImageOverlayEl = cardEl.querySelector(`.${styles.cardAboutImageOverlay}`);
+          if (aboutImageOverlayEl) {
+            aboutImageOverlayEl.style.opacity = (universeFormationFactor * 0.98).toFixed(3);
+          }
+          const browserHeaderEl = cardEl.querySelector(`.${styles.browserHeader}`);
+          if (browserHeaderEl) {
+            browserHeaderEl.style.opacity = (1 - universeFormationFactor).toFixed(3);
+          }
+        }
+
+        // ── STEPS 4, 5, 6: MULTI-LAYER SCATTERED UNIVERSE WITH CENTER-FACING RADIAL TILT (MATCHING REFERENCE GIF SCREENSHOT 2) ──
+        if (universeFormationFactor > 0.05) {
+          const orbitBlendT = Math.max(0, Math.min(1, (universeFormationFactor - 0.08) / 0.82));
+          const easeOrbitT = 1 - Math.pow(1 - orbitBlendT, 3);
+
+          // Calculate current spatial angle directly from card's CURRENT (x,y) location (Zero criss-crossing!)
+          const spatialAngle = Math.atan2(finalY, finalX);
+          const orbitAngle = spatialAngle + time * 0.008; // Serene slow continuous rotation
+
+          // 3 Scattered Radial Layers (Inner, Mid, Outer) so cards are SCATTERED across screen, NOT in a single orbit line!
+          const layer = idx % 3;
+          const layerRadX = layer === 0 ? (isMobile ? 18 : isTablet ? 22 : 25)
+                          : layer === 1 ? (isMobile ? 28 : isTablet ? 32 : 36)
+                          :               (isMobile ? 38 : isTablet ? 42 : 46);
+
+          const layerRadY = layer === 0 ? (isMobile ? 12 : isTablet ? 14 : 17)
+                          : layer === 1 ? (isMobile ? 20 : isTablet ? 22 : 25)
+                          :               (isMobile ? 28 : isTablet ? 30 : 34);
+
+          // Individual scatter noise offset to prevent any alignment into a single ring
+          const scatterNoiseX = Math.sin(idx * 7.5) * 3.5;
+          const scatterNoiseY = Math.cos(idx * 4.3) * 3.5;
+
+          const orbitX = Math.cos(orbitAngle) * layerRadX + scatterNoiseX;
+          const orbitY = Math.sin(orbitAngle) * layerRadY + scatterNoiseY;
+          const orbitZ = (layer === 0 ? -100 : layer === 1 ? 0 : 90) + Math.sin(spatialAngle * 2 + time * 0.2) * 25;
+
+          // Prominent photo tile scale (~160px wide) for clear, high-impact view
+          const targetTileScale = layer === 0 ? (isMobile ? 0.34 : isTablet ? 0.38 : 0.42)
+                                : layer === 1 ? (isMobile ? 0.38 : isTablet ? 0.44 : 0.48)
+                                :               (isMobile ? 0.42 : isTablet ? 0.48 : 0.52);
+
+          // EXACT RADIAL TANGENT ROTATION FACING CENTER (Matching Reference Screenshot 2!)
+          // (spatialAngle * 180 / Math.PI) + 90deg aligns the tile tangentially around the center circle!
+          const orbitRotZ = (spatialAngle * 180 / Math.PI) + 90;
+          const orbitRotX = -Math.sin(spatialAngle) * 6;
+          const orbitRotY = Math.cos(spatialAngle) * 6;
+
+          const orbitOpacity = 0.96;
+
+          finalX = finalX + (orbitX - finalX) * easeOrbitT;
+          finalY = finalY + (orbitY - finalY) * easeOrbitT;
+          finalZ = finalZ + (orbitZ - finalZ) * easeOrbitT;
+
+          finalScale = finalScale + (targetTileScale - finalScale) * easeOrbitT;
+          finalRotX = finalRotX + (orbitRotX - finalRotX) * easeOrbitT;
+          finalRotY = finalRotY + (orbitRotY - finalRotY) * easeOrbitT;
+          finalRotZ = finalRotZ + (orbitRotZ - finalRotZ) * easeOrbitT;
+          finalOpacity = finalOpacity + (orbitOpacity - finalOpacity) * easeOrbitT;
+          finalBlur = finalBlur + (0 - finalBlur) * easeOrbitT;
         }
 
         const isHovered = !transitionActive && activeProjectRef.current === proj.id;
@@ -316,7 +438,7 @@ export const Hero = () => {
             <div
               key={proj.id}
               ref={(el) => (cardRefs.current[idx] = el)}
-              className={`${styles.mockupCard} ${activeProject === proj.id ? styles.mockupCardHovered : ''}`}
+              className={styles.mockupCard}
               onMouseEnter={() => {
                 activeProjectRef.current = proj.id;
                 setActiveProject(proj.id);
@@ -328,12 +450,12 @@ export const Hero = () => {
               <div className={styles.dynamicSpecularLight} />
               <div className={styles.hoverSheenBeam} />
 
-              {/* Full-Card Clean Image Overlay for About Stage (Loaded from aboutPageCards.js) */}
-              {idx < 2 && aboutPageCards[idx] && (
+              {/* Full-Card Clean Image Overlay for About Stage & Universe Formation */}
+              {aboutPageCards[idx % aboutPageCards.length] && (
                 <div className={styles.cardAboutImageOverlay}>
                   <img
-                    src={aboutPageCards[idx].image}
-                    alt={aboutPageCards[idx].title}
+                    src={aboutPageCards[idx % aboutPageCards.length].image}
+                    alt={proj.title}
                     className={styles.aboutCardImage}
                   />
                   <div className={styles.aboutCardVignette} />
@@ -374,27 +496,26 @@ export const Hero = () => {
                   </div>
 
                   <div className={styles.mockHero}>
-                    <span className={styles.mockTag}>{proj.category}</span>
-                    <h4 className={styles.mockTitle}>{proj.title}</h4>
-                    <p className={styles.mockDesc}>{proj.previewText}</p>
-                    
-                    <div className={styles.mockFooter}>
-                      <span className={styles.mockStat}>{proj.stat}</span>
-                      <span className={styles.mockBudget}>{proj.budget}</span>
-                    </div>
+                    <div className={styles.mockPill} />
+                    <div className={styles.mockHeading} />
+                    <div className={styles.mockHeadingShort} />
+                    <div className={styles.mockSub} />
+                  </div>
+
+                  <div className={styles.mockGrid}>
+                    <div className={styles.mockCard} />
+                    <div className={styles.mockCard} />
+                    <div className={styles.mockCard} />
                   </div>
                 </div>
 
-                {/* Hover Reveal Overlay (Depth Layer Z: 75px) */}
-                <div className={styles.hoverOverlay}>
-                  <span className={styles.hoverTitle}>{proj.title}</span>
-                  <span className={styles.hoverCategory}>{proj.category}</span>
-                  <div className={styles.tagsRow}>
-                    {proj.tags.map((t) => (
-                      <span key={t} className={styles.tagPill}>{t}</span>
-                    ))}
+                {/* Bottom Overlay bar with Title & Stat (Depth Layer Z: 40px) */}
+                <div className={styles.cardFooter}>
+                  <div className={styles.footerTextGroup}>
+                    <span className={styles.cardTitle}>{proj.title}</span>
+                    <span className={styles.cardPreviewText}>{proj.previewText}</span>
                   </div>
-                  <span className={styles.viewBadge}>EXPLORE PROJECT →</span>
+                  <div className={styles.statBadge}>{proj.stat}</div>
                 </div>
               </div>
 
@@ -408,7 +529,7 @@ export const Hero = () => {
       {/* Unified 3D About Stage Overlay — text, watermark, and SVG arcs fade in as cards settle */}
       <div className={styles.aboutStageOverlay} ref={aboutStageOverlayRef}>
         {/* Decorative Background SVG Arc Lines (Matching Reference Image Inspiration) */}
-        <svg className={styles.aboutArcSvg} viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg ref={aboutArcRef} className={styles.aboutArcSvg} viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M -100 250 C 300 50, 600 450, 900 200"
             stroke="rgba(255, 255, 255, 0.08)"
@@ -425,7 +546,7 @@ export const Hero = () => {
         </svg>
 
         {/* Large Watermark Background Typography */}
-        <div className={styles.aboutWatermark}>
+        <div ref={aboutWatermarkRef} className={styles.aboutWatermark}>
           <span className={styles.aboutWatermarkText}>CRAFT</span>
           <span className={styles.aboutWatermarkText}>VISION</span>
           <span className={styles.aboutWatermarkText}>IMPACT</span>
@@ -434,11 +555,11 @@ export const Hero = () => {
 
         {/* Upper Right Editorial Text Block */}
         <div className={styles.aboutTypographyGroup}>
-          <span className={styles.aboutLabel}>01 // STUDIO OVERVIEW</span>
-          <h2 className={styles.aboutHeading}>
+          <span ref={aboutLabelRef} className={styles.aboutLabel}>01 // STUDIO OVERVIEW</span>
+          <h2 ref={aboutHeadingRef} className={styles.aboutHeading}>
             Designing Digital <span className="serif-italic text-cyan">Experiences</span> With Purpose & Precision.
           </h2>
-          <p className={styles.aboutParagraph}>
+          <p ref={aboutParagraphRef} className={styles.aboutParagraph}>
             At Lame Dev, we believe in the power of digital craft, restraint, and architectural clarity. Our mission is simple: to support ambitious brands and create lasting change through high-impact interactive systems—one detail at a time.
           </p>
         </div>
@@ -454,41 +575,17 @@ export const Hero = () => {
             <h1 className={styles.heroHeading}>
               Designing Digital <br />
               <span className="serif-italic text-cyan">Experiences</span> That Move <br />
-              People.
+              Ambitious Brands Forward.
             </h1>
 
-            {/* Slow Motion Animated Theme Line */}
-            <div className={styles.themeLineWrapper}>
-              <div className={styles.themeLineTrack}>
-                <div className={styles.themeLineGlow} />
-                <div className={styles.themeLightBeam} />
-              </div>
-            </div>
-
             <p className={styles.heroSubheading}>
-              Lame Dev creates modern websites, UI/UX experiences, SaaS platforms and custom web applications for ambitious businesses worldwide.
+              We partner with visionary founders and global teams to engineer high-performance web applications, bespoke digital design systems, and immersive web experiences.
             </p>
-
-            <div className={styles.heroButtons}>
-              <a href="#portfolio" className={styles.primaryBtn}>
-                <span>VIEW PORTFOLIO</span>
-                <div className={styles.btnArrow}>→</div>
-              </a>
-              <a href="#contact" className={styles.secondaryBtn}>
-                <span>START YOUR PROJECT</span>
-              </a>
-            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Scroll Down Indicator */}
-      <div className={styles.scrollDownIndicator}>
-        <span className={styles.scrollText}>SCROLL TO EXPLORE</span>
-        <div className={styles.scrollLine}>
-          <div className={styles.scrollDot} />
         </div>
       </div>
     </section>
   );
 };
+
+export default Hero;
