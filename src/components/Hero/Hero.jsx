@@ -260,20 +260,26 @@ export const Hero = () => {
         const orbitAngle = spatialAngle + time * 0.008;
 
         const layer = i % 3;
-        const layerRadX = layer === 0 ? (isMobile ? 18 : isTablet ? 22 : 25)
-                        : layer === 1 ? (isMobile ? 28 : isTablet ? 32 : 36)
-                        :               (isMobile ? 38 : isTablet ? 42 : 46);
+        const layerRadX = layer === 0 ? (isMobile ? 16 : isTablet ? 19 : 21)
+                        : layer === 1 ? (isMobile ? 24 : isTablet ? 27 : 30)
+                        :               (isMobile ? 31 : isTablet ? 34 : 37);
 
-        const layerRadY = layer === 0 ? (isMobile ? 12 : isTablet ? 14 : 17)
-                        : layer === 1 ? (isMobile ? 20 : isTablet ? 22 : 25)
-                        :               (isMobile ? 28 : isTablet ? 30 : 34);
+        const layerRadY = layer === 0 ? (isMobile ? 15 : isTablet ? 18 : 20)
+                        : layer === 1 ? (isMobile ? 22 : isTablet ? 26 : 29)
+                        :               (isMobile ? 29 : isTablet ? 33 : 37);
 
-        const scatterNoiseX = Math.sin(i * 7.5) * 3.5;
+        const scatterNoiseX = Math.sin(i * 7.5) * 2.5;
         const scatterNoiseY = Math.cos(i * 4.3) * 3.5;
 
-        const orbitX = Math.cos(orbitAngle) * layerRadX + scatterNoiseX;
-        const orbitY = Math.sin(orbitAngle) * layerRadY + scatterNoiseY;
+        const rawX = Math.cos(orbitAngle) * layerRadX + scatterNoiseX;
+        const rawY = Math.sin(orbitAngle) * layerRadY + scatterNoiseY;
         const orbitZ = (layer === 0 ? -100 : layer === 1 ? 0 : 90) + Math.sin(spatialAngle * 2 + time * 0.2) * 25;
+
+        const maxBoundX = isMobile ? 30 : isTablet ? 33 : 36;
+        const maxBoundY = isMobile ? 28 : isTablet ? 34 : 38;
+
+        const orbitX = Math.max(-maxBoundX, Math.min(maxBoundX, rawX));
+        const orbitY = Math.max(-maxBoundY, Math.min(maxBoundY, rawY));
 
         const targetTileScale = layer === 0 ? (isMobile ? 0.34 : isTablet ? 0.38 : 0.42)
                               : layer === 1 ? (isMobile ? 0.38 : isTablet ? 0.44 : 0.48)
@@ -295,8 +301,11 @@ export const Hero = () => {
       }
 
       // Dynamic 4-pass Nearest-Neighbor Separation Pass (guarantees ZERO card overlaps across screen!)
-      const minGapX = isMobile ? 14 : isTablet ? 16 : 18; // in vw (~240px gap)
-      const minGapY = isMobile ? 10 : isTablet ? 12 : 14; // in vh (~120px gap)
+      const minGapX = isMobile ? 12 : isTablet ? 14 : 16; // in vw (~220px gap)
+      const minGapY = isMobile ? 9 : isTablet ? 11 : 13;  // in vh (~110px gap)
+
+      const maxBoundX = isMobile ? 30 : isTablet ? 33 : 36;
+      const maxBoundY = isMobile ? 28 : isTablet ? 34 : 38;
 
       for (let iter = 0; iter < 4; iter++) {
         for (let i = 0; i < orbitTargets.length; i++) {
@@ -310,10 +319,10 @@ export const Hero = () => {
               const pushX = (dx / normDist) * overlap * 0.45;
               const pushY = (dy / normDist) * overlap * 0.45;
 
-              orbitTargets[i].x += pushX;
-              orbitTargets[i].y += pushY;
-              orbitTargets[j].x -= pushX;
-              orbitTargets[j].y -= pushY;
+              orbitTargets[i].x = Math.max(-maxBoundX, Math.min(maxBoundX, orbitTargets[i].x + pushX));
+              orbitTargets[i].y = Math.max(-maxBoundY, Math.min(maxBoundY, orbitTargets[i].y + pushY));
+              orbitTargets[j].x = Math.max(-maxBoundX, Math.min(maxBoundX, orbitTargets[j].x - pushX));
+              orbitTargets[j].y = Math.max(-maxBoundY, Math.min(maxBoundY, orbitTargets[j].y - pushY));
 
               // Re-align center-facing rotation after displacement
               const newAngle = Math.atan2(orbitTargets[i].y, orbitTargets[i].x);
