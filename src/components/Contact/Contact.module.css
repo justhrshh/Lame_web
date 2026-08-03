@@ -1,8 +1,24 @@
 .contactSection {
   position: relative;
   padding: var(--section-padding-y) 0;
-  background-color: var(--bg-primary);
-  border-top: 1px solid var(--border-subtle);
+  /* Transparent — SceneEnvironment clean white launch room shows through */
+  background-color: transparent;
+}
+
+/* Launch room — clean focused white light above form */
+.contactSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 45vw;
+  max-width: 600px;
+  height: 45vh;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(30px);
 }
 
 .sectionHeader {
@@ -177,9 +193,9 @@
 }
 
 .inputField:focus, .textareaField:focus {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 25px rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-medium);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 25px var(--accent-subtle);
 }
 
 .submitBtn {
@@ -188,7 +204,7 @@
   justify-content: center;
   gap: 1rem;
   padding: 1.1rem 2.5rem;
-  background: #FFFFFF;
+  background: var(--accent-gradient);
   color: #0A0A0A;
   font-family: var(--font-sans);
   font-size: 0.8rem;
@@ -197,14 +213,15 @@
   border: none;
   border-radius: var(--border-radius-pill);
   cursor: pointer;
+  box-shadow: 0 10px 30px var(--accent-subtle);
   transition: all 0.35s var(--ease-out-expo);
-  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
 }
 
 .submitBtn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 18px 45px rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 15px 40px var(--accent-medium);
 }
+
 
 .submitBtn:hover .btnArrow {
   transform: translateX(4px);

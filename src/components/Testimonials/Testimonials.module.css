@@ -1,9 +1,25 @@
 .testimonialsSection {
   position: relative;
   padding: var(--section-padding-y) 0;
-  background-color: var(--bg-primary);
-  border-top: 1px solid var(--border-subtle);
+  /* Transparent — SceneEnvironment warm amber lighting shows through */
+  background-color: transparent;
   overflow: hidden;
+}
+
+/* Warm conversational meeting room — soft amber side light */
+.testimonialsSection::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 40%;
+  transform: translateX(-50%);
+  width: 60vw;
+  max-width: 700px;
+  height: 50vh;
+  background: radial-gradient(ellipse at 40% 30%, rgba(255, 245, 220, 0.025) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(50px);
 }
 
 .sectionHeader {
@@ -89,8 +105,9 @@
 }
 
 .star {
-  color: #FFFFFF;
+  color: var(--accent-strong);
   font-size: 1.1rem;
+  text-shadow: 0 0 10px var(--accent-subtle);
 }
 
 .reviewText {

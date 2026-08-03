@@ -12,22 +12,14 @@ html, body {
   width: 100%;
   min-height: 100%;
   background-color: var(--bg-primary);
-  /* Architectural luxury grid overlay and ambient lighting */
-  background-image: 
-    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 40%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
-    radial-gradient(ellipse at 20% 70%, rgba(255, 255, 255, 0.025) 0%, transparent 50%),
-    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 80px 80px, 80px 80px;
-  background-position: 0 0, 0 0, 0 0, -1px -1px, -1px -1px;
-  background-attachment: fixed;
   color: var(--text-primary);
   font-family: var(--font-sans);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   cursor: auto;
+  position: relative;
+  isolation: isolate;
 }
 
 a, button, input, textarea, select, [role="button"] {
@@ -84,20 +76,6 @@ a, button, input, textarea, select, [role="button"] {
   border-radius: var(--border-radius-pill);
 }
 
-/* Subtle ambient section glow background highlight */
 section {
   position: relative;
-}
-
-section::before {
-  content: '';
-  position: absolute;
-  top: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60vw;
-  height: 40vh;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.02) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
 }

@@ -1,0 +1,146 @@
+/* ============================================================
+   SceneEnvironment — One Continuous Cinematic Environment
+   v2 — Full directive implementation
+   
+   PHILOSOPHY: One world. One light. One journey.
+   No resets. No sections. Rooms inside a single building.
+   ============================================================ */
+
+.sceneRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ── Cinematic Film Grain ──────────────────────────────────────
+   Ultra-subtle. Static (no flicker). Like aged photographic paper.
+   Opacity kept at 0.028 — invisible individually, adds collective richness.
+   ─────────────────────────────────────────────────────────── */
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  opacity: 0.028;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  mix-blend-mode: overlay;
+}
+
+/* ── Evolving Architectural Grid ─────────────────────────────
+   Single light source. Ultra fine hairlines.
+   Almost invisible. A reward for attentive visitors.
+   Per-zone opacity driven by JavaScript.
+   ─────────────────────────────────────────────────────────── */
+.grid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+.gridSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Per-Zone Atmospheric Overlays ───────────────────────────
+   Each zone has its own color temperature and ambient depth.
+   These crossfade via JS — never abruptly switch.
+   ─────────────────────────────────────────────────────────── */
+
+/* ZONE 0 — Hero / Arrival */
+.zoneHero {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at 18% 85%, rgba(0, 198, 255, 0.012) 0%, transparent 45%);
+}
+
+/* ZONE 1 — Studio Story / Creative Workspace */
+.zoneStudio {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 28% 40%, rgba(215, 218, 248, 0.028) 0%, transparent 50%),
+    radial-gradient(ellipse at 72% 25%, rgba(255, 255, 255, 0.022) 0%, transparent 48%),
+    radial-gradient(ellipse at 50% 80%, rgba(200, 210, 240, 0.015) 0%, transparent 40%);
+}
+
+/* ZONE 2 — Services / Workshop (Technical cool) */
+.zoneServices {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 62% 35%, rgba(170, 200, 255, 0.025) 0%, transparent 52%),
+    radial-gradient(ellipse at 18% 55%, rgba(255, 255, 255, 0.018) 0%, transparent 42%),
+    radial-gradient(ellipse at 85% 70%, rgba(160, 190, 255, 0.012) 0%, transparent 40%);
+}
+
+/* ZONE 3 — Portfolio / Showcase Gallery (Neutral museum) */
+.zonePortfolio {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(235, 235, 245, 0.028) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 15%, rgba(220, 220, 235, 0.016) 0%, transparent 42%),
+    radial-gradient(ellipse at 15% 65%, rgba(255, 255, 255, 0.012) 0%, transparent 38%);
+}
+
+/* ZONE 4 — Testimonials / Client Lounge (Warm amber breath) */
+.zoneTestimonials {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 38% 45%, rgba(255, 242, 210, 0.022) 0%, transparent 52%),
+    radial-gradient(ellipse at 65% 65%, rgba(255, 230, 190, 0.014) 0%, transparent 45%),
+    radial-gradient(ellipse at 20% 25%, rgba(255, 248, 230, 0.012) 0%, transparent 40%);
+}
+
+/* ZONE 5 — Contact / Launch Room (Focused white clarity) */
+.zoneContact {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(255, 255, 255, 0.038) 0%, transparent 52%),
+    radial-gradient(ellipse at 50% 85%, rgba(220, 230, 255, 0.018) 0%, transparent 42%);
+}
+
+/* ── Directional Spotlight ────────────────────────────────────
+   The single moving light source of the entire website.
+   Shifts position and temperature as zones evolve.
+   ─────────────────────────────────────────────────────────── */
+.spotlight {
+  position: absolute;
+  width: 85vw;
+  height: 85vw;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  will-change: top, left, opacity, background;
+  mix-blend-mode: screen;
+  filter: blur(100px);
+  pointer-events: none;
+}
+
+/* ── Zone Transition Bridge ───────────────────────────────────
+   Ultra-soft gradient at the bottom of each zone that bleeds
+   into the next room — preventing any visual reset.
+   ─────────────────────────────────────────────────────────── */
+.transitionBridge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 35vh;
+  pointer-events: none;
+  z-index: 2;
+  will-change: opacity;
+}

@@ -46,6 +46,20 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0.25em;
   color: var(--text-muted);
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+/* Accent thread indicator — appears on every section caption */
+.caption-label::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  background: var(--accent-medium);
+  flex-shrink: 0;
+  transition: background 0.6s ease;
 }
 
 .serif-italic {
@@ -58,4 +72,14 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.text-cyan {
+  display: inline-block;
+  background: linear-gradient(135deg, #FFFFFF 0%, #C2F3FF 42%, #00C6FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 10px rgba(0, 198, 255, 0.22));
 }

@@ -7,10 +7,12 @@ export const About = () => {
       <div className="container">
         {/* Section Header */}
         <div className={styles.sectionHeader}>
-          <span className="caption-label">01 // THE STUDIO STORY</span>
+          <span className="caption-label">01 // THE STUDIO</span>
           <h2 className="heading-section">
-            We architect websites that don't just exist— <br />
-            <span className="serif-italic text-gradient">they command attention.</span>
+            <span className={styles.firstLine}>We don't just build websites—</span> <br />
+            <span className="serif-italic text-gradient">
+              we build <span className="text-cyan">brands</span> people remember.
+            </span>
           </h2>
         </div>
 
@@ -19,33 +21,36 @@ export const About = () => {
           {/* Main Story Content */}
           <div className={styles.storyColumn}>
             <p className={styles.paragraphLead}>
-              Lame Dev was founded on a simple conviction: the internet has grown derivative. Most websites feel like rigid templates engineered by algorithms rather than digital art handcrafted by master artisans.
+              Lame.Dev is a multidisciplinary creative agency where design, technology, motion, and storytelling converge.
             </p>
             <p className={styles.paragraphBody}>
-              We operate as a high-tier boutique web studio and independent development agency. Combining deep technical mastery of 60 FPS CSS 3D parallax, WebGL, React, and motion physics with luxury editorial typography, we craft digital experiences that leave lasting emotional impressions.
+              From premium websites and intuitive digital products to brand identities, cinematic motion graphics, VFX, social media creatives, and visual campaigns, we craft experiences that elevate how businesses are seen, remembered, and trusted.
+            </p>
+            <p className={styles.paragraphBody}>
+              Every project begins with strategy—not templates. We study your brand, understand your audience, and design every visual, interaction, animation, and experience with intention. Whether it's a startup launching its first identity or an established company redefining its digital presence, our goal remains the same:
             </p>
 
-            {/* Core Values / Capability Badges */}
+            {/* Capability Cards */}
             <div className={styles.capabilitiesGrid}>
               <div className={styles.capabilityCard}>
                 <span className={styles.capNumber}>01</span>
-                <h4>Creative Engineering</h4>
-                <p>3D floating galleries, rAF motion loops, and bespoke interaction physics.</p>
+                <h4>Digital Experiences</h4>
+                <p>Premium websites, web applications, interactive interfaces, and conversion-focused user experiences.</p>
               </div>
               <div className={styles.capabilityCard}>
                 <span className={styles.capNumber}>02</span>
-                <h4>Editorial UI/UX</h4>
-                <p>Luxury typography, generous whitespace, and human-centered design systems.</p>
+                <h4>Brand & Graphic Design</h4>
+                <p>Visual identities, logo systems, marketing assets, print collateral, packaging, presentations, and social media creatives.</p>
               </div>
               <div className={styles.capabilityCard}>
                 <span className={styles.capNumber}>03</span>
-                <h4>Uncompromising Speed</h4>
-                <p>Sub-second page loads, 98+ Lighthouse scores, and zero animation jank.</p>
+                <h4>Motion & VFX</h4>
+                <p>Motion graphics, product reveals, explainer animations, cinematic edits, VFX, title sequences, and promotional videos.</p>
               </div>
               <div className={styles.capabilityCard}>
                 <span className={styles.capNumber}>04</span>
-                <h4>Global Client Focus</h4>
-                <p>Direct pair-collaboration with visionary founders and boutique brands worldwide.</p>
+                <h4>Creative Strategy</h4>
+                <p>Brand positioning, visual direction, design systems, content planning, and long-term creative partnerships.</p>
               </div>
             </div>
           </div>
@@ -64,9 +69,9 @@ export const About = () => {
               <div className={styles.floatingQuoteBadge}>
                 <span className={styles.quoteIcon}>“</span>
                 <p className={styles.quoteText}>
-                  Digital craftsmanship is the bridge between pure functionality and artistic awe.
+                  Create work that people don't just use—they remember.
                 </p>
-                <span className={styles.quoteAuthor}>— LAME DEV MANIFESTO</span>
+                <span className={styles.quoteAuthor}>— LAME.DEV MANIFESTO</span>
               </div>
             </div>
 
@@ -93,3 +98,4 @@ export const About = () => {
     </section>
   );
 };
+

@@ -1,9 +1,27 @@
 .aboutSection {
   position: relative;
   padding: var(--section-padding-y) 0;
-  background-color: var(--bg-primary);
-  border-top: 1px solid var(--border-subtle);
+  /* Transparent — SceneEnvironment provides the atmosphere */
+  background-color: transparent;
   overflow: hidden;
+  /* Above the ghost cards drifting from Hero (viewport3D z-index: 2) */
+  z-index: 5;
+}
+
+/* Soft editorial ceiling light — seamlessly blends with atmosphere without sharp lines */
+.aboutSection::before {
+  content: '';
+  position: absolute;
+  top: -20vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 85vw;
+  max-width: 1000px;
+  height: 70vh;
+  background: radial-gradient(ellipse at 50% 20%, rgba(210, 215, 248, 0.05) 0%, rgba(185, 200, 255, 0.015) 55%, transparent 75%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(50px);
 }
 
 .sectionHeader {
@@ -13,6 +31,15 @@
 
 .sectionHeader h2 {
   margin-top: 1rem;
+}
+
+.firstLine {
+  font-size: clamp(1.5rem, 3.2vw, 2.6rem);
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.2rem;
 }
 
 .editorialGrid {

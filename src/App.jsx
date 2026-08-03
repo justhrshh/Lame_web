@@ -18,6 +18,9 @@ import { Footer } from './components/Footer/Footer';
 // Ambient Micro-Interactions
 import { Cursor } from './components/Cursor/Cursor';
 import { ParticleCanvas } from './components/FloatingElements/ParticleCanvas';
+
+// Cinematic Scene Environment
+import { SceneEnvironment } from './components/SceneEnvironment/SceneEnvironment';
 import { ScrollProgress } from './components/ScrollProgress/ScrollProgress';
 
 export function App() {
@@ -47,6 +50,9 @@ export function App() {
 
   return (
     <div className="app-root">
+      {/* Persistent Cinematic Scene Environment — fixed, z-index 0 */}
+      <SceneEnvironment />
+
       {/* Top Reading Scroll Indicator */}
       <ScrollProgress />
 

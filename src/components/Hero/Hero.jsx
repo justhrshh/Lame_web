@@ -5,10 +5,12 @@ import styles from './Hero.module.css';
 export const Hero = () => {
   const containerRef = useRef(null);
   const galleryRef = useRef(null);
+  const viewportRef = useRef(null);
   const cardRefs = useRef([]);
   const textOverlayRef = useRef(null);
 
   const mousePosRef = useRef({ targetX: 0, targetY: 0 });
+  const activeProjectRef = useRef(null);
   const [activeProject, setActiveProject] = useState(null);
   const [visibleCardCount, setVisibleCardCount] = useState(18);
 
@@ -70,6 +72,7 @@ export const Hero = () => {
     card.style.setProperty('--card-tilt-y', `0deg`);
     card.style.setProperty('--glare-x', `50%`);
     card.style.setProperty('--glare-y', `50%`);
+    activeProjectRef.current = null;
     setActiveProject(null);
   };
 
@@ -95,7 +98,32 @@ export const Hero = () => {
       currMouseY += (mousePosRef.current.targetY - currMouseY) * 0.04;
 
       const currentScroll = window.scrollY;
+      const vh = window.innerHeight;
       const scrollFlight = currentScroll * 1.8;
+
+      // ── Extended dissolve factor ───────────────────────────
+      // Phase 0 (rawFactor 0→1): cards drift outward in hero (0→0.4vh scroll)
+      // Phase 1 (rawFactor 1→2): cards enter About section, ghost-fade (0.4→0.8vh)
+      // Phase 2 (rawFactor >2):  cards fully gone, viewport3D hidden
+      const rawDissolveFactor = Math.min(2.5, currentScroll / (vh * 0.4));
+      const scrollDissolveFactor = Math.min(1, rawDissolveFactor);
+      const aboutEntryFactor = Math.max(0, Math.min(1, rawDissolveFactor - 1.0));
+      const cardsFullyGone = rawDissolveFactor >= 2.2;
+
+      // ── viewport3D: switch to fixed so cards survive in viewport as page scrolls
+      if (viewportRef.current) {
+        if (currentScroll > 5 && !cardsFullyGone) {
+          viewportRef.current.style.position = 'fixed';
+          viewportRef.current.style.inset = '0';
+          // Disable pointer events once cards enter About section territory
+          viewportRef.current.style.pointerEvents = currentScroll > vh * 0.5 ? 'none' : 'auto';
+        } else if (currentScroll <= 5) {
+          viewportRef.current.style.position = 'absolute';
+          viewportRef.current.style.inset = '0';
+          viewportRef.current.style.pointerEvents = 'auto';
+        }
+        viewportRef.current.style.visibility = cardsFullyGone ? 'hidden' : 'visible';
+      }
 
       // Global gallery rotation from mouse perspective
       const sceneRotY = currMouseX * 12;
@@ -112,12 +140,19 @@ export const Hero = () => {
         `;
       }
 
-      // Hero text parallax fade & slide upward on scroll
+      // Hero text 3D parallax, tilt & fade on scroll & mouse move
       if (textOverlayRef.current) {
         const fade = Math.max(0, 1 - currentScroll / 450);
         const slideUp = currentScroll * 0.6;
+        const textTiltX = -currMouseY * 2.5;
+        const textTiltY = currMouseX * 3.5;
+
         textOverlayRef.current.style.opacity = fade.toFixed(3);
-        textOverlayRef.current.style.transform = `translate3d(0, -${slideUp}px, 0)`;
+        textOverlayRef.current.style.transform = `
+          translate3d(0, -${slideUp}px, 50px)
+          rotateX(${textTiltX}deg)
+          rotateY(${textTiltY}deg)
+        `;
         textOverlayRef.current.style.pointerEvents = fade < 0.1 ? 'none' : 'auto';
       }
 
@@ -147,21 +182,78 @@ export const Hero = () => {
         const breathScale = 1 + Math.sin(time * 1.2 + idx) * 0.015;
 
         const depthFactor = (initialPos.z + 500) / 1000;
-        const mouseShiftX = currMouseX * (22 * depthFactor);
-        const mouseShiftY = currMouseY * (18 * depthFactor);
+        const mouseShiftX = currMouseX * (14 * depthFactor);
+        const mouseShiftY = currMouseY * (10 * depthFactor);
+
+        const currentX = initialPos.x + driftX + mouseShiftX;
+        const currentY = initialPos.y + floatY + mouseShiftY;
+
+        // ── Scroll-dissolve: cards drift outward then sink into About section ──
+        const posMag = Math.sqrt(initialPos.x * initialPos.x + initialPos.y * initialPos.y) || 1;
+        const dirX = initialPos.x / posMag;
+        const dirY = initialPos.y / posMag;
+
+        // Phase 1 (hero): outward drift along each card's own radial direction
+        const dissolveCurve = scrollDissolveFactor * scrollDissolveFactor; // ease-in
+        const heroDriftX = dirX * dissolveCurve * 28;
+        const heroDriftY = dirY * dissolveCurve * 18;
+        const dissolveRotZ = initialPos.rz + dirX * dissolveCurve * 10;
+        const dissolveScale = 1 - dissolveCurve * 0.06;
+
+        // Phase 2 (About entry): cards sink DOWNWARD in viewport — independent of direction
+        // aboutEntryFactor: 0→1 as scroll goes from 0.4→0.8vh
+        // Stagger each card slightly so they don't all move identically
+        const cardStagger = (idx % 5) * 0.06; // 0→0.24 stagger
+        const aboutCurve = Math.max(0, aboutEntryFactor - cardStagger);
+        const aboutSink = aboutCurve * 65; // sink 65vh downward into About section
+
+        const finalX = currentX + heroDriftX;
+        const finalY = currentY + heroDriftY + aboutSink;
+
+        // Only apply text safe-zone mask during hero phase (not About entry)
+        let centerOpacity = 1;
+        let centerBlur = 0;
+        let centerSaturate = 1;
+        if (dissolveCurve < 0.8 && aboutEntryFactor === 0) {
+          const clampedX = Math.max(-22, Math.min(22, finalX));
+          const dx = finalX - clampedX;
+          const clampedY = Math.max(-26, Math.min(22, finalY));
+          const dy = finalY - clampedY;
+          const normX = dx / 8;
+          const normY = dy / 8;
+          const centerDist = Math.sqrt(normX * normX + normY * normY);
+          const centerFactor = Math.min(1, Math.max(0, centerDist));
+          centerOpacity = 0.35 + centerFactor * 0.65;
+          centerBlur = (1 - centerFactor) * 2.5;
+          centerSaturate = 0.6 + centerFactor * 0.4;
+        }
 
         const effZ = initialPos.z + loadZOffset + scrollFlight;
         const scrollOpacity = effZ > 450 ? Math.max(0, 1 - (effZ - 450) / 200) : 1;
-        const finalOpacity = cardLoadOpacity * scrollOpacity;
+
+        // Opacity:
+        // Hero phase: gentle fade (stays mostly visible)
+        // About entry: ghost fade — cards become translucent as they sink into studio
+        const heroFade = 1 - dissolveCurve * 0.4;
+        const aboutGhostFade = aboutEntryFactor > 0 ? Math.max(0, 1 - aboutEntryFactor * 1.2) : 1;
+        const dissolveOpacity = heroFade * aboutGhostFade;
+
+        // In About section, cards are desaturated ghosts (no hovered state override)
+        const isHovered = aboutEntryFactor === 0 ? activeProjectRef.current === proj.id : false;
+
+        const finalOpacity = isHovered ? 1 : cardLoadOpacity * scrollOpacity * centerOpacity * dissolveOpacity;
+        const finalBlur = isHovered ? 0 : (centerBlur + aboutEntryFactor * 2);
+        const finalSaturate = isHovered ? 1 : (centerSaturate * (1 - aboutEntryFactor * 0.7));
 
         cardEl.style.transform = `
-          translate3d(${initialPos.x + driftX + mouseShiftX}vw, ${initialPos.y + floatY + mouseShiftY}vh, ${initialPos.z + loadZOffset}px)
+          translate3d(${finalX}vw, ${finalY}vh, ${initialPos.z + loadZOffset}px)
           rotateX(calc(${initialPos.rx + tiltX}deg + var(--card-tilt-x, 0deg)))
           rotateY(calc(${initialPos.ry + tiltY}deg + var(--card-tilt-y, 0deg)))
-          rotateZ(${initialPos.rz}deg)
-          scale(${loadScale * breathScale})
+          rotateZ(${dissolveRotZ}deg)
+          scale(${loadScale * breathScale * dissolveScale})
         `;
         cardEl.style.opacity = finalOpacity.toFixed(2);
+        cardEl.style.filter = isHovered ? 'none' : `blur(${finalBlur.toFixed(1)}px) saturate(${finalSaturate.toFixed(2)})`;
       });
 
       animId = requestAnimationFrame(render);
@@ -174,18 +266,22 @@ export const Hero = () => {
 
   return (
     <section id="home" className={styles.heroSection} ref={containerRef}>
-      {/* Ambient Radial Background Glow */}
+      {/* Ambient Radial Background Glow & Edge Vignette */}
       <div className={styles.ambientGlow} />
+      <div className={styles.vignetteOverlay} />
 
-      {/* 3D Scene Viewport */}
-      <div className={styles.viewport3D}>
+      {/* 3D Scene Viewport — becomes fixed on scroll so cards persist into About section */}
+      <div className={styles.viewport3D} ref={viewportRef}>
         <div className={styles.gallery3D} ref={galleryRef}>
           {MOCKUP_PROJECTS.slice(0, visibleCardCount).map((proj, idx) => (
             <div
               key={proj.id}
               ref={(el) => (cardRefs.current[idx] = el)}
               className={`${styles.mockupCard} ${activeProject === proj.id ? styles.mockupCardHovered : ''}`}
-              onMouseEnter={() => setActiveProject(proj.id)}
+              onMouseEnter={() => {
+                activeProjectRef.current = proj.id;
+                setActiveProject(proj.id);
+              }}
               onMouseMove={(e) => handleCardMouseMove(e, idx)}
               onMouseLeave={() => handleCardMouseLeave(idx)}
             >
@@ -260,9 +356,13 @@ export const Hero = () => {
       <div className={styles.heroTextOverlay} ref={textOverlayRef}>
         <div className="container">
           <div className={styles.textContainer}>
+            {/* Ethereal Halo Backlight Glow behind heading */}
+            <div className={styles.headingBacklightGlow} />
+
             <h1 className={styles.heroHeading}>
               Designing Digital <br />
-              <span className="serif-italic text-gradient">Experiences</span> That Move People.
+              <span className="serif-italic text-cyan">Experiences</span> That Move <br />
+              People.
             </h1>
 
             {/* Slow Motion Animated Theme Line */}

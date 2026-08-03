@@ -1,8 +1,8 @@
 .statsSection {
   position: relative;
   padding: var(--section-padding-y) 0;
-  background-color: var(--bg-primary);
-  border-top: 1px solid var(--border-subtle);
+  /* Transparent — flows naturally between Portfolio and Testimonials */
+  background-color: transparent;
 }
 
 .sectionHeader {

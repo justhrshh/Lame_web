@@ -8,6 +8,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Allow SceneEnvironment to bleed upward */
+  isolation: isolate;
+}
+
+/* Bottom atmospheric dissolve — hero softly bleeds into studio below */
+.heroSection::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 22vh;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(10, 10, 10, 0.3) 45%,
+    rgba(10, 10, 10, 0.75) 75%,
+    rgba(10, 10, 10, 0.96) 100%
+  );
+  pointer-events: none;
+  /* z-index lower than cards so cards can drift through */
+  z-index: 4;
 }
 
 .ambientGlow {
@@ -23,6 +45,15 @@
   filter: blur(50px);
 }
 
+.vignetteOverlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 55%, rgba(10, 10, 10, 0.35) 80%, rgba(10, 10, 10, 0.75) 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+
 .viewport3D {
   position: absolute;
   inset: 0;
@@ -32,7 +63,8 @@
   align-items: center;
   justify-content: center;
   z-index: 2;
-  overflow: hidden;
+  /* Cards allowed to visually overflow into About section below */
+  overflow: visible;
 }
 
 .gallery3D {
@@ -366,14 +398,39 @@
   pointer-events: auto;
   text-align: center;
   margin-top: 2rem;
+  perspective: 1000px;
+  transform-style: preserve-3d;
 }
 
 .textContainer {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   max-width: 900px;
   margin: 0 auto;
+  transform-style: preserve-3d;
+}
+
+/* Ethereal Halo Backlight Glow behind heading */
+.headingBacklightGlow {
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50vw;
+  max-width: 550px;
+  height: 24vh;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.05) 0%, rgba(0, 229, 255, 0.03) 45%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(22px);
+  animation: glowPulse 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes glowPulse {
+  0% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.95); }
+  100% { opacity: 1.0; transform: translate(-50%, -50%) scale(1.05); }
 }
 
 .agencyBadge {
@@ -403,10 +460,11 @@
 
 @keyframes pulseDot {
   0% { opacity: 0.4; transform: scale(0.8); }
-  100% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 1.2; transform: scale(1.2); }
 }
 
 .heroHeading {
+  position: relative;
   font-family: var(--font-serif);
   font-size: clamp(2.8rem, 6.5vw, 6.2rem);
   line-height: 1.04;
@@ -414,7 +472,14 @@
   letter-spacing: -0.03em;
   color: #FFFFFF;
   margin-bottom: 1rem;
-  text-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  /* Multi-layered 3D popped-up text shadow & ambient light bloom */
+  text-shadow: 
+    0 1px 1px rgba(255, 255, 255, 0.35),
+    0 2px 3px rgba(0, 0, 0, 0.6),
+    0 5px 12px rgba(0, 0, 0, 0.8),
+    0 12px 28px rgba(0, 0, 0, 0.95),
+    0 0 35px rgba(255, 255, 255, 0.22),
+    0 0 75px rgba(0, 229, 255, 0.18);
   will-change: transform, opacity;
   animation: slowFadeUp 2.2s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -489,11 +554,12 @@
 
 .heroSubheading {
   font-family: var(--font-sans);
-  font-size: clamp(0.95rem, 1.4vw, 1.25rem);
+  font-size: clamp(0.9rem, 1.18vw, 1.1rem);
   line-height: 1.6;
   color: var(--text-secondary);
   font-weight: 300;
-  max-width: 680px;
+  max-width: 640px;
+  margin-top: 0.2rem;
   will-change: transform, opacity;
   animation: slowFadeUp 2.4s 1.0s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -501,8 +567,8 @@
 .heroButtons {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
-  margin-top: 2.2rem;
+  gap: 1.4rem;
+  margin-top: 2.6rem;
   will-change: transform, opacity;
   animation: slowFadeUp 2.6s 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -511,17 +577,21 @@
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.9rem 2.2rem;
-  background: #FFFFFF;
+  padding: 0.95rem 2.4rem;
+  background: linear-gradient(180deg, #FFFFFF 0%, #E6E6E6 100%);
   color: #0A0A0A;
   font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-decoration: none;
   border-radius: var(--border-radius-pill);
-  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
-  transition: all 0.35s var(--ease-out-expo);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 4px 18px rgba(0, 0, 0, 0.4),
+    0 12px 30px rgba(0, 0, 0, 0.6);
+  border: none;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btnArrow {
@@ -530,8 +600,12 @@
 }
 
 .primaryBtn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 40px rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+  background: #FFFFFF;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 6px 24px rgba(255, 255, 255, 0.35),
+    0 16px 40px rgba(0, 0, 0, 0.7);
 }
 
 .primaryBtn:hover .btnArrow {
@@ -541,24 +615,26 @@
 .secondaryBtn {
   display: inline-flex;
   align-items: center;
-  padding: 0.9rem 2.2rem;
-  background: var(--bg-glass);
+  padding: 0.95rem 2.4rem;
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(16px);
-  border: 1px solid var(--border-light);
-  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.9);
   font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-decoration: none;
   border-radius: var(--border-radius-pill);
-  transition: all 0.35s var(--ease-out-expo);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .secondaryBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
   border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-3px);
+  transform: translateY(-1px);
 }
 
 /* Scroll Down Indicator */
