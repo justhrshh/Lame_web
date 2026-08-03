@@ -231,30 +231,100 @@ export const Hero = () => {
             { x: 20, y: 13, z: 180, rx: 2, ry: -3, rz: -2, scale: 1.02 }
           ];
 
-      // ── Animate individual 3D Cards ──────────────────────────────────────
+      // ── DYNAMIC NEAREST-NEIGHBOR SPACING & DISTANCE CALCULATION ENGINE ──
       const totalUniverseCards = Math.min(MOCKUP_PROJECTS.length, visibleCardCount);
 
-      // Predefined 18 slot angles mapping spatially so Card 0 (top-left) releases to top-left, Card 1 (lower-right) releases to lower-right
-      const CIRCLE_SLOT_ANGLES = [
-        Math.PI * 0.85, // Card 0: Top-Left slot (~153°) -> Shortest path from top-left!
-        Math.PI * 0.15, // Card 1: Lower-Right slot (~27°) -> Shortest path from lower-right!
-        Math.PI * 0.00, // Card 2: Far Right
-        Math.PI * 0.30, // Card 3: Lower Right 2
-        Math.PI * 0.45, // Card 4: Bottom Right
-        Math.PI * 0.60, // Card 5: Bottom Center
-        Math.PI * 0.72, // Card 6: Bottom Left
-        Math.PI * 1.00, // Card 7: Far Left
-        Math.PI * 1.15, // Card 8: Upper Left 1
-        Math.PI * 1.30, // Card 9: Upper Left 2
-        Math.PI * 1.45, // Card 10: Top Left
-        Math.PI * 1.60, // Card 11: Top Center
-        Math.PI * 1.75, // Card 12: Top Right 1
-        Math.PI * 1.90, // Card 13: Top Right 2
-        Math.PI * 0.10, // Card 14: Mid Right 1
-        Math.PI * 0.40, // Card 15: Mid Bottom Right
-        Math.PI * 0.90, // Card 16: Mid Bottom Left
-        Math.PI * 1.25, // Card 17: Mid Top Left
-      ];
+      // Pre-calculate live scattered universe positions for all cards
+      const orbitTargets = [];
+      for (let i = 0; i < totalUniverseCards; i++) {
+        const proj = MOCKUP_PROJECTS[i];
+        if (!proj) {
+          orbitTargets.push({ x: 0, y: 0, z: 0, rotZ: 0, rotX: 0, rotY: 0, scale: 0.4 });
+          continue;
+        }
+
+        // Exact position where card settles after About reading stage
+        let settleX = proj.initialPos.x;
+        let settleY = proj.initialPos.y;
+
+        if (i === 0) {
+          settleX = CARD_TARGETS[0].x; // -28vw (top-left)
+          settleY = CARD_TARGETS[0].y; // -22vh (top-left)
+        } else if (i === 1) {
+          settleX = CARD_TARGETS[1].x; // +20vw (lower-right)
+          settleY = CARD_TARGETS[1].y; // +13vh (lower-right)
+        }
+
+        // Calculate spatial angle from actual settled position (Zero Criss-Crossing!)
+        const spatialAngle = Math.atan2(settleY, settleX);
+        const orbitAngle = spatialAngle + time * 0.008;
+
+        const layer = i % 3;
+        const layerRadX = layer === 0 ? (isMobile ? 18 : isTablet ? 22 : 25)
+                        : layer === 1 ? (isMobile ? 28 : isTablet ? 32 : 36)
+                        :               (isMobile ? 38 : isTablet ? 42 : 46);
+
+        const layerRadY = layer === 0 ? (isMobile ? 12 : isTablet ? 14 : 17)
+                        : layer === 1 ? (isMobile ? 20 : isTablet ? 22 : 25)
+                        :               (isMobile ? 28 : isTablet ? 30 : 34);
+
+        const scatterNoiseX = Math.sin(i * 7.5) * 3.5;
+        const scatterNoiseY = Math.cos(i * 4.3) * 3.5;
+
+        const orbitX = Math.cos(orbitAngle) * layerRadX + scatterNoiseX;
+        const orbitY = Math.sin(orbitAngle) * layerRadY + scatterNoiseY;
+        const orbitZ = (layer === 0 ? -100 : layer === 1 ? 0 : 90) + Math.sin(spatialAngle * 2 + time * 0.2) * 25;
+
+        const targetTileScale = layer === 0 ? (isMobile ? 0.34 : isTablet ? 0.38 : 0.42)
+                              : layer === 1 ? (isMobile ? 0.38 : isTablet ? 0.44 : 0.48)
+                              :               (isMobile ? 0.42 : isTablet ? 0.48 : 0.52);
+
+        const orbitRotZ = (spatialAngle * 180 / Math.PI) + 90;
+        const orbitRotX = -Math.sin(spatialAngle) * 6;
+        const orbitRotY = Math.cos(spatialAngle) * 6;
+
+        orbitTargets.push({
+          x: orbitX,
+          y: orbitY,
+          z: orbitZ,
+          rotZ: orbitRotZ,
+          rotX: orbitRotX,
+          rotY: orbitRotY,
+          scale: targetTileScale
+        });
+      }
+
+      // Dynamic 4-pass Nearest-Neighbor Separation Pass (guarantees ZERO card overlaps across screen!)
+      const minGapX = isMobile ? 14 : isTablet ? 16 : 18; // in vw (~240px gap)
+      const minGapY = isMobile ? 10 : isTablet ? 12 : 14; // in vh (~120px gap)
+
+      for (let iter = 0; iter < 4; iter++) {
+        for (let i = 0; i < orbitTargets.length; i++) {
+          for (let j = i + 1; j < orbitTargets.length; j++) {
+            const dx = orbitTargets[i].x - orbitTargets[j].x;
+            const dy = orbitTargets[i].y - orbitTargets[j].y;
+            const normDist = Math.sqrt((dx * dx) / (minGapX * minGapX) + (dy * dy) / (minGapY * minGapY));
+
+            if (normDist < 1.0 && normDist > 0.001) {
+              const overlap = (1.0 - normDist);
+              const pushX = (dx / normDist) * overlap * 0.45;
+              const pushY = (dy / normDist) * overlap * 0.45;
+
+              orbitTargets[i].x += pushX;
+              orbitTargets[i].y += pushY;
+              orbitTargets[j].x -= pushX;
+              orbitTargets[j].y -= pushY;
+
+              // Re-align center-facing rotation after displacement
+              const newAngle = Math.atan2(orbitTargets[i].y, orbitTargets[i].x);
+              orbitTargets[i].rotZ = (newAngle * 180 / Math.PI) + 90;
+
+              const newAngleJ = Math.atan2(orbitTargets[j].y, orbitTargets[j].x);
+              orbitTargets[j].rotZ = (newAngleJ * 180 / Math.PI) + 90;
+            }
+          }
+        }
+      }
 
       cardRefs.current.forEach((cardEl, idx) => {
         if (!cardEl) return;
@@ -352,55 +422,22 @@ export const Hero = () => {
           }
         }
 
-        // ── STEPS 4, 5, 6: MULTI-LAYER SCATTERED UNIVERSE WITH CENTER-FACING RADIAL TILT (MATCHING REFERENCE GIF SCREENSHOT 2) ──
+        // ── STEPS 4, 5, 6: NEAREST-NEIGHBOR DISTANCE ENFORCED UNIVERSE WITH CENTER-FACING RADIAL TILT ──
         if (universeFormationFactor > 0.05) {
           const orbitBlendT = Math.max(0, Math.min(1, (universeFormationFactor - 0.08) / 0.82));
           const easeOrbitT = 1 - Math.pow(1 - orbitBlendT, 3);
 
-          // Calculate current spatial angle directly from card's CURRENT (x,y) location (Zero criss-crossing!)
-          const spatialAngle = Math.atan2(finalY, finalX);
-          const orbitAngle = spatialAngle + time * 0.008; // Serene slow continuous rotation
+          const targetObj = orbitTargets[idx] || { x: 0, y: 0, z: 0, rotZ: 0, rotX: 0, rotY: 0, scale: 0.4 };
 
-          // 3 Scattered Radial Layers (Inner, Mid, Outer) so cards are SCATTERED across screen, NOT in a single orbit line!
-          const layer = idx % 3;
-          const layerRadX = layer === 0 ? (isMobile ? 18 : isTablet ? 22 : 25)
-                          : layer === 1 ? (isMobile ? 28 : isTablet ? 32 : 36)
-                          :               (isMobile ? 38 : isTablet ? 42 : 46);
+          finalX = finalX + (targetObj.x - finalX) * easeOrbitT;
+          finalY = finalY + (targetObj.y - finalY) * easeOrbitT;
+          finalZ = finalZ + (targetObj.z - finalZ) * easeOrbitT;
 
-          const layerRadY = layer === 0 ? (isMobile ? 12 : isTablet ? 14 : 17)
-                          : layer === 1 ? (isMobile ? 20 : isTablet ? 22 : 25)
-                          :               (isMobile ? 28 : isTablet ? 30 : 34);
-
-          // Individual scatter noise offset to prevent any alignment into a single ring
-          const scatterNoiseX = Math.sin(idx * 7.5) * 3.5;
-          const scatterNoiseY = Math.cos(idx * 4.3) * 3.5;
-
-          const orbitX = Math.cos(orbitAngle) * layerRadX + scatterNoiseX;
-          const orbitY = Math.sin(orbitAngle) * layerRadY + scatterNoiseY;
-          const orbitZ = (layer === 0 ? -100 : layer === 1 ? 0 : 90) + Math.sin(spatialAngle * 2 + time * 0.2) * 25;
-
-          // Prominent photo tile scale (~160px wide) for clear, high-impact view
-          const targetTileScale = layer === 0 ? (isMobile ? 0.34 : isTablet ? 0.38 : 0.42)
-                                : layer === 1 ? (isMobile ? 0.38 : isTablet ? 0.44 : 0.48)
-                                :               (isMobile ? 0.42 : isTablet ? 0.48 : 0.52);
-
-          // EXACT RADIAL TANGENT ROTATION FACING CENTER (Matching Reference Screenshot 2!)
-          // (spatialAngle * 180 / Math.PI) + 90deg aligns the tile tangentially around the center circle!
-          const orbitRotZ = (spatialAngle * 180 / Math.PI) + 90;
-          const orbitRotX = -Math.sin(spatialAngle) * 6;
-          const orbitRotY = Math.cos(spatialAngle) * 6;
-
-          const orbitOpacity = 0.96;
-
-          finalX = finalX + (orbitX - finalX) * easeOrbitT;
-          finalY = finalY + (orbitY - finalY) * easeOrbitT;
-          finalZ = finalZ + (orbitZ - finalZ) * easeOrbitT;
-
-          finalScale = finalScale + (targetTileScale - finalScale) * easeOrbitT;
-          finalRotX = finalRotX + (orbitRotX - finalRotX) * easeOrbitT;
-          finalRotY = finalRotY + (orbitRotY - finalRotY) * easeOrbitT;
-          finalRotZ = finalRotZ + (orbitRotZ - finalRotZ) * easeOrbitT;
-          finalOpacity = finalOpacity + (orbitOpacity - finalOpacity) * easeOrbitT;
+          finalScale = finalScale + (targetObj.scale - finalScale) * easeOrbitT;
+          finalRotX = finalRotX + (targetObj.rotX - finalRotX) * easeOrbitT;
+          finalRotY = finalRotY + (targetObj.rotY - finalRotY) * easeOrbitT;
+          finalRotZ = finalRotZ + (targetObj.rotZ - finalRotZ) * easeOrbitT;
+          finalOpacity = finalOpacity + (0.96 - finalOpacity) * easeOrbitT;
           finalBlur = finalBlur + (0 - finalBlur) * easeOrbitT;
         }
 
